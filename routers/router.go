@@ -2,7 +2,7 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"newbug/controller"
+	"luck_draw/controller"
 )
 
 func InitRouter() *gin.Engine {
@@ -11,6 +11,7 @@ func InitRouter() *gin.Engine {
 	api := router.Group("/api")
 	{
 		api.POST("/wx_min_login",controller.WxMiniLogin)
+		api.POST("/create/luck_draw",controller.CreateLuckDraw)
 	}
 
 	return router

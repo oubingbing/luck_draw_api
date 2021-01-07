@@ -3,7 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"newbug/util"
+	"luck_draw/util"
 )
 
 type WxMiniLoginData struct {
