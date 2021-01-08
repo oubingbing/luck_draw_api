@@ -1,6 +1,7 @@
 
 /log
 /.idea
-config.ini
+conf.toml
+app.conf
 /project.*
 /project
