@@ -20,15 +20,15 @@ func GetMysqlConfig() (string,error) {
 	}
 
 	var builder strings.Builder
-	builder.WriteString(strings.TrimSpace(configs["mysql_username"]))
+	builder.WriteString(strings.TrimSpace(configs["DB_USERNAME"]))
 	builder.WriteString(":")
-	builder.WriteString(strings.TrimSpace(configs["mysql_psw"]))
+	builder.WriteString(strings.TrimSpace(configs["DB_PASSWORD"]))
 	builder.WriteString("@(")
-	builder.WriteString(strings.TrimSpace(configs["mysql_host"]))
+	builder.WriteString(strings.TrimSpace(configs["DB_HOST"]))
 	builder.WriteString(":")
-	builder.WriteString(strings.TrimSpace(configs["mysql_port"]))
+	builder.WriteString(strings.TrimSpace(configs["DB_PORT"]))
 	builder.WriteString(")/")
-	builder.WriteString(strings.TrimSpace(configs["mysql_dbname"]))
+	builder.WriteString(strings.TrimSpace(configs["DB_DATABASE"]))
 	builder.WriteString("?charset=utf8")
 	builder.WriteString("&parseTime=True&loc=Local")
 	return builder.String(),nil
@@ -45,7 +45,6 @@ func GetAppConfig() map[string]string {
 	configMp := make(map[string]string)
 	for {
 		line, err := reader.ReadString('\n') //以'\n'为结束符读入一行
-		fmt.Printf("line:%v\n",line)
 		if err != nil || io.EOF == err {
 			break
 		}

@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"luck_draw/routers"
+	"luck_draw/util"
 	"net/http"
-	"newbug/routers"
-	"newbug/util"
 )
 
 func main() {
