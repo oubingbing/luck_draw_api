@@ -11,6 +11,7 @@ import (
 var startDateErr error = errors.New("活动开始日期格式错误")
 var endDateErr error = errors.New("活动截止日期格式错误")
 var runDateErr error = errors.New("活动开奖日期格式错误")
+var activityDetailNotFound error = errors.New("活动详情不存在")
 
 func SaveActivity(db *gorm.DB,param *model.ActivityCreateParam) (int64,*enums.ErrorInfo) {
 	activity := &model.Activity{
@@ -21,7 +22,7 @@ func SaveActivity(db *gorm.DB,param *model.ActivityCreateParam) (int64,*enums.Er
 		LimitJoin:param.LimitJoin,
 		JoinLimitNum:param.JoinLimitNum,
 		ReceiveLimit:param.ReceiveLimit,
-		Describe:param.Describe,
+		Des:param.Des,
 		Attachments:param.Attachments,
 		ShareTitle:param.ShareTitle,
 		ShareImage:param.ShareImage,
@@ -63,12 +64,26 @@ func ActivityPage(db *gorm.DB,page *model.PageParam) (model.AcPage,*enums.ErrorI
 	return activities,nil
 }
 
-func ActivityDetail(db *gorm.DB,id string) (*model.Activity,*enums.ErrorInfo) {
+func ActivityDetail(db *gorm.DB,id string) (*model.ActivityDetailFormat,*enums.ErrorInfo) {
 	activity := &model.Activity{}
-	_,err := activity.Detail(db,id)
+	detail,acNotFound,err := activity.Detail(db,id)
 	if err != nil {
 		return nil,&enums.ErrorInfo{err,enums.ACTIVITY_DETAIL_QUERY_ERR}
 	}
 
-	return activity,nil
+	if acNotFound {
+		return nil,&enums.ErrorInfo{activityDetailNotFound,enums.ACTIVITY_DETAIL_NOT_FOUND}
+	}
+
+	gift := &model.Gift{}
+	giftDetail,notFound,err := gift.First(db,detail.GiftId)
+	if err != nil {
+		return nil,&enums.ErrorInfo{err,enums.GIFT_GET_DETAIL_ERR}
+	}
+	if notFound {
+		return nil,&enums.ErrorInfo{giftNotFound,enums.GIFT_NOT_FOUND}
+	}
+	detail.Gift = giftDetail
+
+	return detail,nil
 }

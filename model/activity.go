@@ -42,7 +42,7 @@ type ActivityCreateParam struct {
 	LimitJoin 		int32 	 	`form:"limit_join" json:"limit_join" binding:"required"` 			//是否限制参加人数
 	JoinLimitNum 	float32 	`form:"join_limit_num" json:"join_limit_num" binding:"required"` 	//限制参加人数
 	ReceiveLimit 	float32 	`form:"receive_limit" json:"receive_limit" binding:"required"` 		//每人限领数量
-	Describe 		string      `form:"describe" json:"describe" binding:"required"`
+	Des 			string      `form:"des" json:"des" binding:"required"`
 	Attachments 	string   	`form:"attachments" json:"attachments" binding:"required"`
 	StartAt 		string    	`form:"start_at" json:"start_at" binding:"required"`				//活动开始时间
 	EndAt 			string      `form:"end_at" json:"end_at" binding:"required"`					//活动截止时间
@@ -61,7 +61,7 @@ type Activity struct {
 	LimitJoin 		int32 	 	`gorm:"column:limit_join"`  	//是否限制参加人数
 	JoinLimitNum 	float32 	`gorm:"column:join_limit_num"` 	//限制参加人数
 	ReceiveLimit 	float32 	`gorm:"column:receive_limit"` 	//每人限领数量
-	Describe 		string      `gorm:"column:describe"`
+	Des 			string      `gorm:"column:des"`
 	Attachments 	string   	`gorm:"column:attachments"`
 	StartAt 		time.Time   `gorm:"column:start_at"` 		//活动开始时间
 	EndAt 			time.Time   `gorm:"column:end_at"` 			//活动截止时间
@@ -69,6 +69,24 @@ type Activity struct {
 	Status 			int8		`gorm:"column:status"` 			//活动状态
 	ShareTitle 		string    	`gorm:"column:share_title"` 	//分享标题
 	ShareImage 		string    	`gorm:"column:share_image"` 	//分享图片
+}
+
+type ActivityDetailFormat struct {
+	ID        		uint
+	Name 			string
+	GiftId 			int64
+	Type 			int8
+	FromType 		int8
+	JoinNum 		int32
+	LimitJoin 		int32
+	JoinLimitNum 	float32
+	Des 			string
+	Attachments 	string
+	Status 			int8
+	ShareTitle 		string
+	ShareImage 		string
+	CreatedAt 		time.Time
+	Gift      		*GiftDetail
 }
 
 type  ActivityPageFormat struct {
@@ -81,6 +99,7 @@ type  ActivityPageFormat struct {
 	JoinLimitNum 	float32 	 	//限制参加人数
 	//Attachments 	string
 	Status 			int8		 	//活动状态
+	Gift			*Gift
 }
 
 type AcPage []ActivityPageFormat
@@ -111,8 +130,11 @@ func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorI
 	return activities,nil
 }
 
-func (activity *Activity) Detail(db *gorm.DB,id string) (bool,error) {
-	err := db.Table(activity.TableName()).Where("id = ?",id).First(activity).Error
-
-	return db.RecordNotFound(),err
+func (activity *Activity) Detail(db *gorm.DB,id string) (*ActivityDetailFormat,bool,error,) {
+	activityDetail := &ActivityDetailFormat{}
+	err := db.Table(activity.TableName()).
+		Select("id,name,gift_id,type,from_type,join_num,limit_join,join_limit_num,des,attachments,share_title,share_image,created_at").
+		Where("id = ?",id).
+		First(activityDetail).Error
+	return activityDetail,db.RecordNotFound(),err
 }

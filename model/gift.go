@@ -29,7 +29,7 @@ type GiftParam struct {
 	Type 		int8   		`form:"type" json:"type"` 				//奖品类型，1=红包，2=商品，3=话费
 	FROM        int8   		`form:"from" json:"from"`   			//奖品来源，1=平台，2=用户
 	STATUS      int8   		`form:"status" json:"status"` 			//奖品状态，1=上架，2=下架，下架不可用
-	Describe    string      `form:"describe" json:"describe"`
+	Des    		string      `form:"describe" json:"des"`
 	Attachments string  	`form:"attachment" json:"attachment"`
 }
 
@@ -41,8 +41,18 @@ type Gift struct {
 	Type 		int8   		`gorm:"column:type"`			//奖品类型，1=红包，2=商品，3=话费
 	FROM        int8   		`gorm:"column:from"`  			//奖品来源，1=平台，2=用户
 	STATUS      int8   		`gorm:"column:status"`			//奖品状态，1=上架，2=下架，下架不可用
-	Describe    string      `gorm:"column:describe"`
+	Des    		string      `gorm:"column:des"`
 	Attachments string  	`gorm:"column:attachments"`
+}
+
+type GiftDetail struct {
+	ID			uint
+	Name 		string
+	UserId 		int
+	Num 		float32
+	Type 		int8
+	Des    		string
+	Attachments string
 }
 
 func (Gift) TableName() string  {
@@ -54,8 +64,12 @@ func (gift *Gift)Store(db *gorm.DB) (int64,error) {
 	return result.RowsAffected,result.Error
 }
 
-func (gift *Gift)First(db *gorm.DB,id int64) (bool,error) {
-	gift.ID = uint(id)
-	notFound := db.First(gift).RecordNotFound()
-	return notFound,db.Error
+func (gift *Gift)First(db *gorm.DB,id int64) (*GiftDetail,bool,error) {
+	detail := &GiftDetail{}
+	notFound := db.Table(gift.TableName()).
+		Select("name,user_id,num,type,des,attachments").
+		Where("id = ?",id).
+		First(detail).
+		RecordNotFound()
+	return detail,notFound,db.Error
 }

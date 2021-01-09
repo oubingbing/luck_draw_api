@@ -21,6 +21,7 @@ const (
 	ACTIVITY_PAGE_ERR				= 2005		//分页查询错误
 	ACTIVITY_DETAIL_PARAM_ERR		= 2006		//详情id不能为空
 	ACTIVITY_DETAIL_QUERY_ERR		= 2007		//详情查询错误
+	ACTIVITY_DETAIL_NOT_FOUND		= 2008		//详情不存在
 )
 
 //礼品相关 3000 ~ 3999
@@ -28,6 +29,7 @@ const (
 	GIFT_SAVE_ERR					= 3000 		//礼品保存失败
 	GIFT_FIRST_ERR					= 3001 		//礼品查询出错
 	GIFT_NOT_FOUND					= 3002 		//礼品不存在
+	GIFT_GET_DETAIL_ERR				= 3003 		//礼品详情查询错误
 )
 
 

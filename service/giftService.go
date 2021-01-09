@@ -18,7 +18,7 @@ func SaveGift(db *gorm.DB,userId int,giftParam *model.GiftParam) (int64,*enums.E
 		Type:giftParam.Type,
 		FROM:giftParam.FROM,
 		STATUS:giftParam.STATUS,
-		Describe:giftParam.Describe,
+		Des:giftParam.Des,
 		Attachments:giftParam.Attachments,
 	}
 
@@ -30,9 +30,9 @@ func SaveGift(db *gorm.DB,userId int,giftParam *model.GiftParam) (int64,*enums.E
 	return effect,nil
 }
 
-func FirstGiftById(db *gorm.DB,id int64) (*model.Gift,*enums.ErrorInfo) {
+func FirstGiftById(db *gorm.DB,id int64) (*model.GiftDetail,*enums.ErrorInfo) {
 	gift := &model.Gift{}
-	notFound,err := gift.First(db,id)
+	detail,notFound,err := gift.First(db,id)
 	if err != nil {
 		return nil,&enums.ErrorInfo{err,enums.GIFT_FIRST_ERR}
 	}
@@ -41,5 +41,5 @@ func FirstGiftById(db *gorm.DB,id int64) (*model.Gift,*enums.ErrorInfo) {
 		return nil,&enums.ErrorInfo{giftNotFound,enums.GIFT_NOT_FOUND}
 	}
 
-	return gift,nil
+	return detail,nil
 }
