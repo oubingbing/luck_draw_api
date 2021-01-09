@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"newbug/util"
 )
@@ -18,7 +17,6 @@ type WxMiniLoginData struct {
 func WxMiniLogin(ctx *gin.Context)  {
 	var loginData WxMiniLoginData
 	if err := ctx.ShouldBind(&loginData); err != nil {
-		fmt.Println(err)
 		util.ResponseJson(ctx,500,err.Error(),nil)
 		return
 	}
