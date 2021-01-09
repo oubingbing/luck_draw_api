@@ -17,6 +17,8 @@ func InitRouter() *gin.Engine {
 		api.POST("/activity/create",controller.CreateActivity)
 		//活动分页
 		api.GET("/activity/page",controller.GetActivities)
+		//活动分页
+		api.GET("/activity/detail",controller.GetDetail)
 
 		//新建礼品
 		api.POST("/gift/create",controller.CreateGift)

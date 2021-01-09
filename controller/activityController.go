@@ -45,7 +45,7 @@ func CreateActivity(ctx *gin.Context)  {
 }
 
 func GetActivities(ctx *gin.Context)  {
-	var param model.ActivityPageParam
+	var param model.PageParam
 	errInfo := &enums.ErrorInfo{}
 	if errInfo.Err = ctx.ShouldBind(&param); errInfo.Err != nil {
 		util.ResponseJson(ctx,enums.ACTIVITY_PARAM_ERR,errInfo.Err.Error(),nil)
@@ -65,5 +65,31 @@ func GetActivities(ctx *gin.Context)  {
 	}
 
 	util.ResponseJson(ctx,enums.SUCCESS,"",activities)
+	return
+}
+
+/**
+ * 获取详情
+ */
+func GetDetail(ctx *gin.Context)  {
+	id,ok := ctx.GetQuery("id")
+	if !ok {
+		util.ResponseJson(ctx,enums.ACTIVITY_DETAIL_PARAM_ERR,"参数不能为空",nil)
+		return
+	}
+
+	db,connectErr := model.Connect()
+	if connectErr != nil {
+		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
+		return
+	}
+
+	activity,err := service.ActivityDetail(db ,id)
+	if err != nil {
+		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
+		return
+	}
+
+	util.ResponseJson(ctx,enums.SUCCESS,"",activity)
 	return
 }

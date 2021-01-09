@@ -17,7 +17,7 @@ func SaveActivity(db *gorm.DB,param *model.ActivityCreateParam) (int64,*enums.Er
 		Name:param.Name,
 		GiftId:param.GiftId,
 		Type:model.ACTIVITY_TYPE_PHONE_BILL,
-		FROM:model.ACTIVITY_FROM_USER,
+		FromType:model.ACTIVITY_FROM_USER,
 		LimitJoin:param.LimitJoin,
 		JoinLimitNum:param.JoinLimitNum,
 		ReceiveLimit:param.ReceiveLimit,
@@ -53,7 +53,7 @@ func SaveActivity(db *gorm.DB,param *model.ActivityCreateParam) (int64,*enums.Er
 	return effect,&enums.ErrorInfo{saveErr,enums.ACTIVITY_SAVE_ERR}
 }
 
-func ActivityPage(db * gorm.DB,page *model.ActivityPageParam) (model.AcPage,*enums.ErrorInfo) {
+func ActivityPage(db *gorm.DB,page *model.PageParam) (model.AcPage,*enums.ErrorInfo) {
 	activity := &model.Activity{}
 	activities,err := activity.Page(db,page)
 	if err != nil {
@@ -61,4 +61,14 @@ func ActivityPage(db * gorm.DB,page *model.ActivityPageParam) (model.AcPage,*enu
 	}
 
 	return activities,nil
+}
+
+func ActivityDetail(db *gorm.DB,id string) (*model.Activity,*enums.ErrorInfo) {
+	activity := &model.Activity{}
+	_,err := activity.Detail(db,id)
+	if err != nil {
+		return nil,&enums.ErrorInfo{err,enums.ACTIVITY_DETAIL_QUERY_ERR}
+	}
+
+	return activity,nil
 }

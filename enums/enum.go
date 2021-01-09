@@ -19,6 +19,8 @@ const (
 	ACTIVITY_RUN_DATE_ERR 			= 2003 		//活动开奖日期解析错误
 	ACTIVITY_SAVE_ERR 				= 2004 		//活动保存失败
 	ACTIVITY_PAGE_ERR				= 2005		//分页查询错误
+	ACTIVITY_DETAIL_PARAM_ERR		= 2006		//详情id不能为空
+	ACTIVITY_DETAIL_QUERY_ERR		= 2007		//详情查询错误
 )
 
 //礼品相关 3000 ~ 3999

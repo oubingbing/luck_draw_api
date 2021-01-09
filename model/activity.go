@@ -51,19 +51,12 @@ type ActivityCreateParam struct {
 	ShareImage 		string    	`form:"share_image" json:"share_image"` 							//分享图片
 }
 
-type ActivityPageParam struct {
-	PageNum 		int 		`form:"page_num" json:"page_num" binding:"required"`
-	PageSize 		int  		`form:"page_size" json:"page_size" binding:"required"`
-	OrderBY 		string 	 	`form:"order_by" json:"order_by" binding:"required"`
-	Sort			string 		`form:"sort" json:"sort" binding:"required"` 							//分享图片
-}
-
 type Activity struct {
 	gorm.Model
 	Name 			string 		`gorm:"column:name"`
 	GiftId 			int64 		`gorm:"column:gift_id"`
 	Type 			int8   		`gorm:"column:type"` 			//活动类型
-	FROM 			int8   		`gorm:"column:from"` 			//发布活动的用户类型
+	FromType 		int8   		`gorm:"column:from_type"` 			//发布活动的用户类型
 	JoinNum 		int32 		`gorm:"column:join_num"`   		//已参加人数
 	LimitJoin 		int32 	 	`gorm:"column:limit_join"`  	//是否限制参加人数
 	JoinLimitNum 	float32 	`gorm:"column:join_limit_num"` 	//限制参加人数
@@ -78,7 +71,19 @@ type Activity struct {
 	ShareImage 		string    	`gorm:"column:share_image"` 	//分享图片
 }
 
-type AcPage []Activity
+type  ActivityPageFormat struct {
+	ID        		uint
+	Name 			string
+	GiftId 			int64
+	Type 			int8   		 	//活动类型
+	FromType 		int32   		 //发布活动的用户类型
+	JoinNum 		int32 		   	//已参加人数
+	JoinLimitNum 	float32 	 	//限制参加人数
+	//Attachments 	string
+	Status 			int8		 	//活动状态
+}
+
+type AcPage []ActivityPageFormat
 
 var pageErr error = errors.New("查询出错")
 
@@ -91,11 +96,11 @@ func (activity *Activity)Store(db *gorm.DB) (int64,error) {
 	return createResult.RowsAffected,createResult.Error
 }
 
-func (activity *Activity)Page(db *gorm.DB,page *ActivityPageParam) (AcPage,*enums.ErrorInfo) {
-	var activities []Activity
-	err := db.Where("status in (?)",[]int8{ACTIVITY_STATSUS_RUNNING,ACTIVITY_STATSUS_FINISH}).
-			Limit(page.PageSize).
-			Select("name,id").
+func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorInfo) {
+	var activities AcPage
+	err :=  Page(db,activity.TableName(),page).
+			Where("status in (?)",[]int8{ACTIVITY_STATSUS_RUNNING,ACTIVITY_STATSUS_FINISH}).
+			Select("id,name,gift_id,type,from_type,join_num,join_limit_num,status").
 			Order("id desc").
 			Find(&activities).Error
 	if err != nil {
@@ -103,7 +108,11 @@ func (activity *Activity)Page(db *gorm.DB,page *ActivityPageParam) (AcPage,*enum
 		return nil,&enums.ErrorInfo{pageErr,enums.ACTIVITY_PAGE_ERR}
 	}
 
-	fmt.Println(activities)
-
 	return activities,nil
+}
+
+func (activity *Activity) Detail(db *gorm.DB,id string) (bool,error) {
+	err := db.Table(activity.TableName()).Where("id = ?",id).First(activity).Error
+
+	return db.RecordNotFound(),err
 }
