@@ -93,3 +93,29 @@ func GetDetail(ctx *gin.Context)  {
 	util.ResponseJson(ctx,enums.SUCCESS,"",activity)
 	return
 }
+
+/**
+ * 参与活动
+ */
+func Join(ctx *gin.Context)  {
+	id,ok := ctx.GetPostForm("id")
+	if !ok {
+		util.ResponseJson(ctx,enums.ACTIVITY_JOIN_PARAM_ERR,"参数不能为空",nil)
+		return
+	}
+
+	db,connectErr := model.Connect()
+	if connectErr != nil {
+		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
+		return
+	}
+
+	err := service.ActivityJoin(db,id,1)
+	if err != nil {
+		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
+		return
+	}
+
+	util.ResponseJson(ctx,enums.SUCCESS,"排队中...",nil)
+	return
+}

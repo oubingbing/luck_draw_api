@@ -2,16 +2,22 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"luck_draw/enums"
 	"luck_draw/model"
+	"luck_draw/util"
 	"time"
 )
 
-var startDateErr error = errors.New("活动开始日期格式错误")
-var endDateErr error = errors.New("活动截止日期格式错误")
-var runDateErr error = errors.New("活动开奖日期格式错误")
-var activityDetailNotFound error = errors.New("活动详情不存在")
+var startDateErr 			error 		= errors.New("活动开始日期格式错误")
+var endDateErr 				error 		= errors.New("活动截止日期格式错误")
+var runDateErr 				error 		= errors.New("活动开奖日期格式错误")
+var activityDetailNotFound 	error 		= errors.New("活动详情不存在")
+var joinLimit 				error 		= errors.New("活动参与人数达到限制啦")
+var saveJoinLogFail 		error 		= errors.New("参加活动失败")
+var existsJoinLog	 		error 		= errors.New("您已参加该活动，不可重复参加")
+var queryJoinLogDbErr	 	error 		= errors.New("查询出错")
 
 func SaveActivity(db *gorm.DB,param *model.ActivityCreateParam) (int64,*enums.ErrorInfo) {
 	activity := &model.Activity{
@@ -86,4 +92,82 @@ func ActivityDetail(db *gorm.DB,id string) (*model.ActivityDetailFormat,*enums.E
 	detail.Gift = giftDetail
 
 	return detail,nil
+}
+
+/**
+ * 进入参与活动队列
+ */
+func ActivityJoin(db *gorm.DB,id string,userId int64) (*enums.ErrorInfo) {
+	activity := &model.Activity{}
+
+	tx := db.Begin()
+
+	//悲观锁
+	acNotFound,err := activity.LockById(tx,id)
+	if err != nil {
+		tx.Rollback()
+		util.ErrDetail(enums.ACTIVITY_DETAIL_QUERY_ERR,"活动详情查询错误-"+err.Error(),id)
+		return &enums.ErrorInfo{err,enums.ACTIVITY_DETAIL_QUERY_ERR}
+	}
+
+	if acNotFound {
+		tx.Rollback()
+		util.ErrDetail(enums.ACTIVITY_DETAIL_NOT_FOUND,"活动详情不存在-",id)
+		return &enums.ErrorInfo{activityDetailNotFound,enums.ACTIVITY_DETAIL_NOT_FOUND}
+	}
+
+	if float32(activity.JoinNum) >= activity.JoinLimitNum {
+		tx.Rollback()
+		return &enums.ErrorInfo{joinLimit,enums.ACTIVITY_JOIN_LIMIT}
+	}
+
+	//写入参与日志
+	_,joinLogErr := SaveJoinLog(tx,int64(activity.ID),userId)
+	if joinLogErr != nil {
+		tx.Rollback()
+		return joinLogErr
+	}
+	
+	//加入Redis队列进行参与活动
+
+	tx.Commit()
+
+	return nil
+}
+
+/**
+ * 写入参与日志
+ */
+func SaveJoinLog(db *gorm.DB,activityId int64,userId int64) (*model.JoinLog,*enums.ErrorInfo) {
+	joinLog := &model.JoinLog{}
+
+	err := joinLog.FindByUserActivity(db,activityId,userId)
+	if err != nil && !gorm.IsRecordNotFoundError(err){
+		util.ErrDetail(enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,fmt.Sprintf("查询是否重复参与活动出错：%v",err.Error()),fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
+		return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_QUERY_ERR,Err:queryJoinLogDbErr}
+	}
+
+	//如果还有错，那一定是record not found
+	if gorm.IsRecordNotFoundError(err) {
+		joinLog.ActivityId = activityId
+		joinLog.UserId = userId
+		joinLog.Status = model.JOIN_LOG_STATUS_FAIL
+		joinLog.Remark = ""
+		joinLog.JoinedAt = nil
+
+		effect,err := joinLog.Store(db)
+		if err != nil {
+			util.ErrDetail(enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,fmt.Sprintf("写入参与日志失败：%v",err.Error()),fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
+			return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:saveJoinLogFail}
+		}
+
+		if effect <= 0 {
+			util.ErrDetail(enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,fmt.Sprintf("写入参与日志失败：%v",effect),fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
+			return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:saveJoinLogFail}
+		}
+
+		return joinLog,nil
+	}else{
+		return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_REPEAT,Err:existsJoinLog}
+	}
 }

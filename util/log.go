@@ -64,3 +64,7 @@ func isExistDir(path string) bool {
 	}
 	return true
 }
+
+func ErrDetail(code int,msg string,data interface{})  {
+	Error(fmt.Sprintf("err_code：%v,err_msg：%v,数据:%v\n",code,msg,data))
+}

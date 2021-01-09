@@ -36,21 +36,6 @@ const (
 
 )
 
-type ActivityCreateParam struct {
-	Name 			string 		`form:"name" json:"name" binding:"required"`
-	GiftId 			int64 		`form:"gift_id" json:"gift_id" binding:"required"`
-	LimitJoin 		int32 	 	`form:"limit_join" json:"limit_join" binding:"required"` 			//是否限制参加人数
-	JoinLimitNum 	float32 	`form:"join_limit_num" json:"join_limit_num" binding:"required"` 	//限制参加人数
-	ReceiveLimit 	float32 	`form:"receive_limit" json:"receive_limit" binding:"required"` 		//每人限领数量
-	Des 			string      `form:"des" json:"des" binding:"required"`
-	Attachments 	string   	`form:"attachments" json:"attachments" binding:"required"`
-	StartAt 		string    	`form:"start_at" json:"start_at" binding:"required"`				//活动开始时间
-	EndAt 			string      `form:"end_at" json:"end_at" binding:"required"`					//活动截止时间
-	RunAt 			string      `form:"run_at" json:"run_at" binding:"required"`					//开奖时间
-	ShareTitle 		string    	`form:"share_title" json:"share_title"` 							//分享标题
-	ShareImage 		string    	`form:"share_image" json:"share_image"` 							//分享图片
-}
-
 type Activity struct {
 	gorm.Model
 	Name 			string 		`gorm:"column:name"`
@@ -69,6 +54,21 @@ type Activity struct {
 	Status 			int8		`gorm:"column:status"` 			//活动状态
 	ShareTitle 		string    	`gorm:"column:share_title"` 	//分享标题
 	ShareImage 		string    	`gorm:"column:share_image"` 	//分享图片
+}
+
+type ActivityCreateParam struct {
+	Name 			string 		`form:"name" json:"name" binding:"required"`
+	GiftId 			int64 		`form:"gift_id" json:"gift_id" binding:"required"`
+	LimitJoin 		int32 	 	`form:"limit_join" json:"limit_join" binding:"required"` 			//是否限制参加人数
+	JoinLimitNum 	float32 	`form:"join_limit_num" json:"join_limit_num" binding:"required"` 	//限制参加人数
+	ReceiveLimit 	float32 	`form:"receive_limit" json:"receive_limit" binding:"required"` 		//每人限领数量
+	Des 			string      `form:"des" json:"des" binding:"required"`
+	Attachments 	string   	`form:"attachments" json:"attachments" binding:"required"`
+	StartAt 		string    	`form:"start_at" json:"start_at" binding:"required"`				//活动开始时间
+	EndAt 			string      `form:"end_at" json:"end_at" binding:"required"`					//活动截止时间
+	RunAt 			string      `form:"run_at" json:"run_at" binding:"required"`					//开奖时间
+	ShareTitle 		string    	`form:"share_title" json:"share_title"` 							//分享标题
+	ShareImage 		string    	`form:"share_image" json:"share_image"` 							//分享图片
 }
 
 type ActivityDetailFormat struct {
@@ -137,4 +137,13 @@ func (activity *Activity) Detail(db *gorm.DB,id string) (*ActivityDetailFormat,b
 		Where("id = ?",id).
 		First(activityDetail).Error
 	return activityDetail,db.RecordNotFound(),err
+}
+
+func (activity *Activity)LockById(db *gorm.DB,id string) (bool,error) {
+	err := db.Table(activity.TableName()).
+		Set("gorm:query_option", "FOR UPDATE").
+		Where("id = ?",id).
+		First(activity).Error
+
+	return db.RecordNotFound(),err
 }

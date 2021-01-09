@@ -22,6 +22,11 @@ const (
 	ACTIVITY_DETAIL_PARAM_ERR		= 2006		//详情id不能为空
 	ACTIVITY_DETAIL_QUERY_ERR		= 2007		//详情查询错误
 	ACTIVITY_DETAIL_NOT_FOUND		= 2008		//详情不存在
+	ACTIVITY_JOIN_PARAM_ERR			= 2009		//参团参数失败，id为空
+	ACTIVITY_JOIN_LIMIT				= 2010		//活动参与人数达到限制啦
+	ACTIVITY_JOIN_SAVE_LOG_FAIL		= 2011		//参加活动失败
+	ACTIVITY_JOIN_REPEAT			= 2012		//您已参加该活动，不可重复参加
+	ACTIVITY_JOIN_QUERY_ERR			= 2013		//查询参与日志出错
 )
 
 //礼品相关 3000 ~ 3999

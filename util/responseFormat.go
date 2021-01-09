@@ -14,7 +14,7 @@ type Response struct {
 }
 
 func (r *Response) ResponseError(ctx *gin.Context)  {
-	Error(fmt.Sprintf(r.ErrorMessage))
+	Error(fmt.Sprintf("err_code:%v，err_msg：%v",r.ErrorCode,r.ErrorMessage))
 	ctx.JSON(http.StatusOK,r)
 }
 
