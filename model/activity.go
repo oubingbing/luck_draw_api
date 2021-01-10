@@ -57,7 +57,7 @@ type Activity struct {
 }
 
 
-type AcPage []enums.ActivityPageFormat
+type AcPage []ActivityPageFormat
 
 var pageErr error = errors.New("查询出错")
 

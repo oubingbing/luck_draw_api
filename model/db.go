@@ -20,13 +20,11 @@ var getCnfErr error = errors.New("配置读取失败")
 var connectErr error = errors.New("系统异常")
 
 func Connect() (*gorm.DB,*enums.ErrorInfo) {
-	config ,err := util.GetMysqlConfig()
 	errorInfo := &enums.ErrorInfo{}
-	if err != nil{
-		util.Info(fmt.Sprintf("获取数据失败：%v\n",err.Error()))
-		errorInfo.Err = getCnfErr
-		errorInfo.Code = enums.DB_CONNECT_ERR
-		return nil,errorInfo
+	config ,configErr := util.GetMysqlConfig()
+	if configErr != nil{
+		util.Info(fmt.Sprintf("获取数据失败：%v\n",configErr.Err.Error()))
+		return nil,configErr
 	}
 
 	db, err := gorm.Open("mysql", config)

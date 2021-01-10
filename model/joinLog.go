@@ -18,7 +18,7 @@ type JoinLog struct {
 	UserId			int64		`gorm:"column:user_id"` 		//参与用户
 	Status			int8		`gorm:"column:status"` 			//状态，1=排队中，2=加入成功，3=加入失败
 	Remark  		string		`gorm:"column:remark"` 			//备注信息
-	JoinedAt 		*time.Time      `gorm:"column:joined_at"` 		//加入的时间
+	JoinedAt 		*time.Time  `gorm:"column:joined_at"` 		//加入的时间
 }
 
 func (JoinLog) TableName() string  {

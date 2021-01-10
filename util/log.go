@@ -10,28 +10,32 @@ import (
 var log = logrus.New()
 
 func Info(info string)  {
-	file, err := getFile()
-	if err == nil {
-		log.Out = file
-	} else {
-		log.Info("Failed to log to file, using default stderr")
-	}
+	go func() {
+		file, err := getFile()
+		if err == nil {
+			log.Out = file
+		} else {
+			log.Info("Failed to log to file, using default stderr")
+		}
 
-	defer file.Close()
+		defer file.Close()
 
-	log.Info(info)
+		log.Info(info)
+	}()
 }
 
 func Error(info string)  {
-	file,err := getFile()
-	if err == nil {
-		log.Out = file
-	} else {
-		log.Info("Failed to log to file, using default stderr")
-	}
-	defer file.Close()
+	go func() {
+		file,err := getFile()
+		if err == nil {
+			log.Out = file
+		} else {
+			log.Info("Failed to log to file, using default stderr")
+		}
+		defer file.Close()
 
-	log.Error(info)
+		log.Error(info)
+	}()
 }
 
 func getFile() (*os.File,error) {

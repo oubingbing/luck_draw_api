@@ -2,21 +2,17 @@ package util
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
+	"luck_draw/enums"
 	"os"
 	"strings"
 )
 
-func GetMysqlConfig() (string,error) {
-	configs := GetAppConfig()
-
-	for key,_ := range configs {
-		_,ok := configs[key]
-		if !ok {
-			return "",errors.New(key+"配置信息错误")
-		}
+func GetMysqlConfig() (string,*enums.ErrorInfo) {
+	configs,errInfo := GetConfig()
+	if errInfo != nil {
+		return "",errInfo
 	}
 
 	var builder strings.Builder
@@ -55,8 +51,22 @@ func GetAppConfig() map[string]string {
 
 		configKey := line[0:strings.Index(line,"=")]
 		configValue := line[strings.Index(line,"=")+1:]
+		configValue = strings.Replace(configValue,"\r","",-1)
+		configValue = strings.Replace(configValue,"\n","",-1)
 		configMp[configKey] = configValue
 	}
 
 	return configMp
+}
+
+func GetConfig() ( map[string]string,*enums.ErrorInfo) {
+	configs := GetAppConfig()
+	for key,_ := range configs {
+		_,ok := configs[key]
+		if !ok {
+			return nil,&enums.ErrorInfo{Code:enums.READ_CONFIG_ERR,Err:enums.ReadConfigErr}
+		}
+	}
+
+	return configs,nil
 }

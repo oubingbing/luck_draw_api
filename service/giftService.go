@@ -10,7 +10,7 @@ import (
 var giftNotFound error = errors.New("礼品不存在")
 var giftSaveErr error = errors.New("数据异常，保存失败")
 
-func SaveGift(db *gorm.DB,userId int,giftParam *model.GiftParam) (int64,*enums.ErrorInfo) {
+func SaveGift(db *gorm.DB,userId int,giftParam *enums.GiftParam) (int64,*enums.ErrorInfo) {
 	gift := &model.Gift{
 		Name:giftParam.Name,
 		Num:giftParam.Num,
@@ -30,7 +30,7 @@ func SaveGift(db *gorm.DB,userId int,giftParam *model.GiftParam) (int64,*enums.E
 	return effect,nil
 }
 
-func FirstGiftById(db *gorm.DB,id int64) (*model.GiftDetail,*enums.ErrorInfo) {
+func FirstGiftById(db *gorm.DB,id int64) (*enums.GiftDetail,*enums.ErrorInfo) {
 	gift := &model.Gift{}
 	detail,notFound,err := gift.First(db,id)
 	if err != nil {

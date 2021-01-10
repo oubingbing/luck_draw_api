@@ -15,7 +15,7 @@ var createLDFail error = errors.New("数据保存失败")
  * 新增活动
  */
 func CreateActivity(ctx *gin.Context)  {
-	var param model.ActivityCreateParam
+	var param enums.ActivityCreateParam
 	errInfo := &enums.ErrorInfo{}
 	if errInfo.Err = ctx.ShouldBind(&param); errInfo.Err != nil {
 		util.ResponseJson(ctx,enums.ACTIVITY_PARAM_ERR,errInfo.Err.Error(),nil)

@@ -11,7 +11,7 @@ func InitRouter() *gin.Engine {
 	api := router.Group("/api")
 	{
 		//微信登录
-		api.POST("/wx_min_login",controller.WxMiniLogin)
+		api.POST("/login",controller.Login)
 
 		//新建活动
 		api.POST("/activity/create",controller.CreateActivity)

@@ -9,7 +9,7 @@ import (
 )
 
 func CreateGift(ctx *gin.Context)  {
-	var param model.GiftParam
+	var param enums.GiftParam
 	errInfo := &enums.ErrorInfo{}
 	if errInfo.Err = ctx.ShouldBind(&param); errInfo.Err != nil {
 		util.ResponseJson(ctx,enums.ACTIVITY_PARAM_ERR,errInfo.Err.Error(),nil)

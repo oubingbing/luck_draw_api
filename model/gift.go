@@ -36,6 +36,20 @@ type Gift struct {
 	Attachments string  	`gorm:"column:attachments"`
 }
 
+//活动分页
+type ActivityPageFormat struct {
+	ID        		uint
+	Name 			string
+	GiftId 			int64
+	Type 			int8   		 	//活动类型
+	FromType 		int32   		 //发布活动的用户类型
+	JoinNum 		int32 		   	//已参加人数
+	JoinLimitNum 	float32 	 	//限制参加人数
+	//Attachments 	string
+	Status 			int8		 	//活动状态
+	Gift			*Gift
+}
+
 func (Gift) TableName() string  {
 	return "gift"
 }

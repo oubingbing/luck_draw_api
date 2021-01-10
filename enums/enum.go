@@ -5,11 +5,21 @@ const (
 	SUCCESS					= 0
 	FAIL 					= 1
 	DB_CONNECT_ERR 			= 2
+	READ_CONFIG_ERR			= 3
 )
 
 //授权相关 1000 ~ 1999
 //参数错误
-const AUTH_PARAMS_ERROR =  1000
+const (
+	AUTH_PARAMS_ERROR 				= 1000		//登录参数错误
+	AUTH_LOGIN_TYPE_ERR				= 1001 		//登录类型错误
+	AUTH_REQUEST_SESSION_ERR		= 1002		//请求微信session出错
+	AUTH_REQUEST_SESSION_RESP_ERR	= 1003		//请求微信session返回错误异常
+	AUTH_PARSE_JSON_ERR				= 1004		//解析用户json失败
+	AUTH_USER_QUERY_ERR				= 1005		//用户查询错误
+	AUTH_USER_SAVE_ERR				= 1006		//新增用户数据库异常
+	AUTH_USER_UPDATE_ERR			= 1007		//用户数据更新失败
+)
 
 //活动相关 2000 ~ 2999
 const (
