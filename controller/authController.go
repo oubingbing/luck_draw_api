@@ -28,7 +28,6 @@ func Login(ctx *gin.Context)  {
 		return
 	}
 
-	util.Info("test")
 
 	userInfo,errInfo := service.GetSessionInfo(&loginData)
 	if errInfo != nil {

@@ -24,6 +24,8 @@ func UserLogin(db *gorm.DB, user *model.User) (string,*enums.ErrorInfo) {
 		return "",&enums.ErrorInfo{Code:enums.AUTH_USER_QUERY_ERR,Err:enums.LoginQueryUserErr}
 	}
 
+	var id uint
+	openId := user.OpenId
 	if gorm.IsRecordNotFoundError(queryErr) {
 		//新增用户
 		effect,saveErr := user.Store(db)
@@ -33,15 +35,22 @@ func UserLogin(db *gorm.DB, user *model.User) (string,*enums.ErrorInfo) {
 		if effect <= 0 {
 			return "",&enums.ErrorInfo{Code:enums.AUTH_USER_SAVE_ERR,Err:enums.LoginInsertUserErr}
 		}
+		id = user.ID
 	}else{
 		//跟新用户昵称和头像
 		updateErr := UserUpdate(db,existsUser.ID,user.NickName,user.AvatarUrl)
 		if updateErr != nil {
 			return "",updateErr
 		}
+		id = existsUser.ID
 	}
 
-	return "",nil
+	token,tokenErr := util.CreateToken(id,openId)
+	if tokenErr != nil {
+		return "",&enums.ErrorInfo{Code:enums.AUTH_USER_CREATE_JWT_ERR,Err:enums.LoginCreateTokenErr}
+	}
+
+	return token,nil
 
 }
 

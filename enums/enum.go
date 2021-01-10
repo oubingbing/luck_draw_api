@@ -19,6 +19,12 @@ const (
 	AUTH_USER_QUERY_ERR				= 1005		//用户查询错误
 	AUTH_USER_SAVE_ERR				= 1006		//新增用户数据库异常
 	AUTH_USER_UPDATE_ERR			= 1007		//用户数据更新失败
+	AUTH_USER_PARSE_JWT_ERR			= 1008		//解析json失败
+	AUTH_USER_CREATE_JWT_ERR		= 1009		//生成jwt异常
+	AUTH_TOKEN_EXPIRED				= 1010		//token已过有效期
+	AUTH_TOKEN_NULL					= 1011		//token为空
+	AUTH_NOT_LOGIN					= 1012		//未登录
+	Auth_TRANS_UID_ERR				= 1013		//userId类型转化失败
 )
 
 //活动相关 2000 ~ 2999

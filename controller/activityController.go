@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"luck_draw/enums"
 	"luck_draw/model"
@@ -98,11 +99,20 @@ func GetDetail(ctx *gin.Context)  {
  * 参与活动
  */
 func Join(ctx *gin.Context)  {
+	uid,_:= ctx.Get("user_id")
 	id,ok := ctx.GetPostForm("id")
 	if !ok {
 		util.ResponseJson(ctx,enums.ACTIVITY_JOIN_PARAM_ERR,"参数不能为空",nil)
 		return
 	}
+
+	userId,cok := uid.(float64)
+	if !cok {
+		util.Info(fmt.Sprintf("用户user_id:%v",uid))
+		util.ResponseJson(ctx,enums.Auth_TRANS_UID_ERR,enums.UserIdTransErr.Error(),nil)
+		return
+	}
+	util.Info(fmt.Sprintf("用户user_id:%v",userId))
 
 	db,connectErr := model.Connect()
 	if connectErr != nil {
@@ -110,7 +120,7 @@ func Join(ctx *gin.Context)  {
 		return
 	}
 
-	err := service.ActivityJoin(db,id,1)
+	err := service.ActivityJoin(db,id,int64(userId))
 	if err != nil {
 		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
 		return

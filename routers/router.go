@@ -3,27 +3,35 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"luck_draw/controller"
+	"luck_draw/middleware"
 )
 
 func InitRouter() *gin.Engine {
 	router := gin.Default()
 
-	api := router.Group("/api")
+	notAuth := router.Group("/api")
 	{
 		//微信登录
-		api.POST("/login",controller.Login)
+		notAuth.POST("/login",controller.Login)
 
+		//活动分页
+		notAuth.GET("/activity/page",controller.GetActivities)
+
+		//活动详情
+		notAuth.GET("/activity/detail",controller.GetDetail)
+	}
+
+	auth := router.Group("/api")
+	auth.Use(middleware.Auth())
+	{
 		//新建活动
-		api.POST("/activity/create",controller.CreateActivity)
-		//活动分页
-		api.GET("/activity/page",controller.GetActivities)
-		//活动分页
-		api.GET("/activity/detail",controller.GetDetail)
+		auth.POST("/activity/create",controller.CreateActivity)
+
 		//活动参与
-		api.POST("/activity/join",controller.Join)
+		auth.POST("/activity/join",controller.Join)
 
 		//新建礼品
-		api.POST("/gift/create",controller.CreateGift)
+		auth.POST("/gift/create",controller.CreateGift)
 
 	}
 
