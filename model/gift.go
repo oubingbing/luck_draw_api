@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/jinzhu/gorm"
+	"luck_draw/enums"
 )
 
 //奖品类型，1=红包，2=商品，3=话费
@@ -23,16 +24,6 @@ const (
 	GIFT_STATUS_DOWN		= 2
 )
 
-type GiftParam struct {
-	Name 		string 		`form:"name" json:"name"`
-	Num 		float32 	`form:"num" json:"num"`
-	Type 		int8   		`form:"type" json:"type"` 				//奖品类型，1=红包，2=商品，3=话费
-	FROM        int8   		`form:"from" json:"from"`   			//奖品来源，1=平台，2=用户
-	STATUS      int8   		`form:"status" json:"status"` 			//奖品状态，1=上架，2=下架，下架不可用
-	Des    		string      `form:"describe" json:"des"`
-	Attachments string  	`form:"attachment" json:"attachment"`
-}
-
 type Gift struct {
 	gorm.Model
 	Name 		string 		`gorm:"column:name"`
@@ -45,16 +36,6 @@ type Gift struct {
 	Attachments string  	`gorm:"column:attachments"`
 }
 
-type GiftDetail struct {
-	ID			uint
-	Name 		string
-	UserId 		int
-	Num 		float32
-	Type 		int8
-	Des    		string
-	Attachments string
-}
-
 func (Gift) TableName() string  {
 	return "gift"
 }
@@ -64,8 +45,8 @@ func (gift *Gift)Store(db *gorm.DB) (int64,error) {
 	return result.RowsAffected,result.Error
 }
 
-func (gift *Gift)First(db *gorm.DB,id int64) (*GiftDetail,bool,error) {
-	detail := &GiftDetail{}
+func (gift *Gift)First(db *gorm.DB,id int64) (*enums.GiftDetail,bool,error) {
+	detail := &enums.GiftDetail{}
 	notFound := db.Table(gift.TableName()).
 		Select("name,user_id,num,type,des,attachments").
 		Where("id = ?",id).

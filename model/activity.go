@@ -56,53 +56,8 @@ type Activity struct {
 	ShareImage 		string    	`gorm:"column:share_image"` 	//分享图片
 }
 
-type ActivityCreateParam struct {
-	Name 			string 		`form:"name" json:"name" binding:"required"`
-	GiftId 			int64 		`form:"gift_id" json:"gift_id" binding:"required"`
-	LimitJoin 		int32 	 	`form:"limit_join" json:"limit_join" binding:"required"` 			//是否限制参加人数
-	JoinLimitNum 	float32 	`form:"join_limit_num" json:"join_limit_num" binding:"required"` 	//限制参加人数
-	ReceiveLimit 	float32 	`form:"receive_limit" json:"receive_limit" binding:"required"` 		//每人限领数量
-	Des 			string      `form:"des" json:"des" binding:"required"`
-	Attachments 	string   	`form:"attachments" json:"attachments" binding:"required"`
-	StartAt 		string    	`form:"start_at" json:"start_at" binding:"required"`				//活动开始时间
-	EndAt 			string      `form:"end_at" json:"end_at" binding:"required"`					//活动截止时间
-	RunAt 			string      `form:"run_at" json:"run_at" binding:"required"`					//开奖时间
-	ShareTitle 		string    	`form:"share_title" json:"share_title"` 							//分享标题
-	ShareImage 		string    	`form:"share_image" json:"share_image"` 							//分享图片
-}
 
-type ActivityDetailFormat struct {
-	ID        		uint
-	Name 			string
-	GiftId 			int64
-	Type 			int8
-	FromType 		int8
-	JoinNum 		int32
-	LimitJoin 		int32
-	JoinLimitNum 	float32
-	Des 			string
-	Attachments 	string
-	Status 			int8
-	ShareTitle 		string
-	ShareImage 		string
-	CreatedAt 		time.Time
-	Gift      		*GiftDetail
-}
-
-type  ActivityPageFormat struct {
-	ID        		uint
-	Name 			string
-	GiftId 			int64
-	Type 			int8   		 	//活动类型
-	FromType 		int32   		 //发布活动的用户类型
-	JoinNum 		int32 		   	//已参加人数
-	JoinLimitNum 	float32 	 	//限制参加人数
-	//Attachments 	string
-	Status 			int8		 	//活动状态
-	Gift			*Gift
-}
-
-type AcPage []ActivityPageFormat
+type AcPage []enums.ActivityPageFormat
 
 var pageErr error = errors.New("查询出错")
 
@@ -130,8 +85,8 @@ func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorI
 	return activities,nil
 }
 
-func (activity *Activity) Detail(db *gorm.DB,id string) (*ActivityDetailFormat,bool,error,) {
-	activityDetail := &ActivityDetailFormat{}
+func (activity *Activity) Detail(db *gorm.DB,id string) (*enums.ActivityDetailFormat,bool,error,) {
+	activityDetail := &enums.ActivityDetailFormat{}
 	err := db.Table(activity.TableName()).
 		Select("id,name,gift_id,type,from_type,join_num,limit_join,join_limit_num,des,attachments,share_title,share_image,created_at").
 		Where("id = ?",id).

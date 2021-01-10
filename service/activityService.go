@@ -19,7 +19,7 @@ var saveJoinLogFail 		error 		= errors.New("参加活动失败")
 var existsJoinLog	 		error 		= errors.New("您已参加该活动，不可重复参加")
 var queryJoinLogDbErr	 	error 		= errors.New("查询出错")
 
-func SaveActivity(db *gorm.DB,param *model.ActivityCreateParam) (int64,*enums.ErrorInfo) {
+func SaveActivity(db *gorm.DB,param *enums.ActivityCreateParam) (int64,*enums.ErrorInfo) {
 	activity := &model.Activity{
 		Name:param.Name,
 		GiftId:param.GiftId,
@@ -70,7 +70,7 @@ func ActivityPage(db *gorm.DB,page *model.PageParam) (model.AcPage,*enums.ErrorI
 	return activities,nil
 }
 
-func ActivityDetail(db *gorm.DB,id string) (*model.ActivityDetailFormat,*enums.ErrorInfo) {
+func ActivityDetail(db *gorm.DB,id string) (*enums.ActivityDetailFormat,*enums.ErrorInfo) {
 	activity := &model.Activity{}
 	detail,acNotFound,err := activity.Detail(db,id)
 	if err != nil {
@@ -143,7 +143,10 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64) (*model.JoinLog,*enu
 
 	err := joinLog.FindByUserActivity(db,activityId,userId)
 	if err != nil && !gorm.IsRecordNotFoundError(err){
-		util.ErrDetail(enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,fmt.Sprintf("查询是否重复参与活动出错：%v",err.Error()),fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
+		util.ErrDetail(
+			enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,
+			fmt.Sprintf("查询是否重复参与活动出错：%v",err.Error()),
+			fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
 		return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_QUERY_ERR,Err:queryJoinLogDbErr}
 	}
 
@@ -157,12 +160,18 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64) (*model.JoinLog,*enu
 
 		effect,err := joinLog.Store(db)
 		if err != nil {
-			util.ErrDetail(enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,fmt.Sprintf("写入参与日志失败：%v",err.Error()),fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
+			util.ErrDetail(
+				enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,
+				fmt.Sprintf("写入参与日志失败：%v",err.Error()),
+				fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
 			return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:saveJoinLogFail}
 		}
 
 		if effect <= 0 {
-			util.ErrDetail(enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,fmt.Sprintf("写入参与日志失败：%v",effect),fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
+			util.ErrDetail(
+				enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,
+				fmt.Sprintf("写入参与日志失败：%v",effect),
+				fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
 			return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:saveJoinLogFail}
 		}
 
