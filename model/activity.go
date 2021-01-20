@@ -74,7 +74,7 @@ func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorI
 	var activities AcPage
 	err :=  Page(db,activity.TableName(),page).
 			Where("status in (?)",[]int8{ACTIVITY_STATSUS_RUNNING,ACTIVITY_STATSUS_FINISH}).
-			Select("id,name,gift_id,type,from_type,join_num,join_limit_num,status").
+			Select("id,name,gift_id,type,from_type,join_num,attachments,join_limit_num,status").
 			Order("id desc").
 			Find(&activities).Error
 	if err != nil {

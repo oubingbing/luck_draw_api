@@ -45,7 +45,8 @@ type ActivityPageFormat struct {
 	FromType 		int32   		 //发布活动的用户类型
 	JoinNum 		int32 		   	//已参加人数
 	JoinLimitNum 	float32 	 	//限制参加人数
-	//Attachments 	string
+	Attachments 	string
+	AttachmentsSli 	[]string
 	Status 			int8		 	//活动状态
 	Gift			*Gift
 }

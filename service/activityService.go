@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
@@ -65,6 +66,15 @@ func ActivityPage(db *gorm.DB,page *model.PageParam) (model.AcPage,*enums.ErrorI
 	activities,err := activity.Page(db,page)
 	if err != nil {
 		return nil,err
+	}
+
+	config,_ := util.GetConfig()
+	domain := config["COS_DOMAIN"]
+	for index,_ := range activities {
+		var sli []string
+		_ = json.Unmarshal([]byte(activities[index].Attachments),&sli)
+		activities[index].AttachmentsSli = append(activities[index].AttachmentsSli, domain+"/"+sli[0])
+		activities[index].Attachments = ""
 	}
 
 	return activities,nil
