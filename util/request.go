@@ -1,7 +1,10 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -79,4 +82,12 @@ func (h HttpClient) Post(urlVal string,data url.Values,beforeHandle beforeReques
 
 func getParseParam(param string) string  {
 	return url.PathEscape(param)
+}
+
+func Input(ctx *gin.Context,key string) (interface{},bool) {
+	var data map[string]interface{}
+	body, _ := ioutil.ReadAll(ctx.Request.Body)
+	json.Unmarshal(body, &data)
+	value,ok := data[key]
+	return value,ok
 }

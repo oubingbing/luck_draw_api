@@ -94,11 +94,11 @@ func (activity *Activity) Detail(db *gorm.DB,id string) (*enums.ActivityDetailFo
 	return activityDetail,db.RecordNotFound(),err
 }
 
-func (activity *Activity)LockById(db *gorm.DB,id string) (bool,error) {
+func (activity *Activity)LockById(db *gorm.DB,id string) error {
 	err := db.Table(activity.TableName()).
 		Set("gorm:query_option", "FOR UPDATE").
 		Where("id = ?",id).
 		First(activity).Error
 
-	return db.RecordNotFound(),err
+	return err
 }

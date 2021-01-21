@@ -152,18 +152,17 @@ func ActivityDetail(db *gorm.DB,id string) (*enums.ActivityDetailFormat,*enums.E
  */
 func ActivityJoin(db *gorm.DB,id string,userId int64) (*enums.ErrorInfo) {
 	activity := &model.Activity{}
-
 	tx := db.Begin()
 
 	//悲观锁
-	acNotFound,err := activity.LockById(tx,id)
+	err := activity.LockById(tx,id)
 	if err != nil {
 		tx.Rollback()
 		util.ErrDetail(enums.ACTIVITY_DETAIL_QUERY_ERR,"活动详情查询错误-"+err.Error(),id)
 		return &enums.ErrorInfo{err,enums.ACTIVITY_DETAIL_QUERY_ERR}
 	}
 
-	if acNotFound {
+	if err == gorm.ErrRecordNotFound {
 		tx.Rollback()
 		util.ErrDetail(enums.ACTIVITY_DETAIL_NOT_FOUND,"活动详情不存在-",id)
 		return &enums.ErrorInfo{activityDetailNotFound,enums.ACTIVITY_DETAIL_NOT_FOUND}
@@ -207,7 +206,7 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64) (*model.JoinLog,*enu
 	if gorm.IsRecordNotFoundError(err) {
 		joinLog.ActivityId = activityId
 		joinLog.UserId = userId
-		joinLog.Status = model.JOIN_LOG_STATUS_FAIL
+		joinLog.Status = model.JOIN_LOG_STATUS_QUEUE
 		joinLog.Remark = ""
 		joinLog.JoinedAt = nil
 

@@ -100,11 +100,13 @@ func GetDetail(ctx *gin.Context)  {
  */
 func Join(ctx *gin.Context)  {
 	uid,_:= ctx.Get("user_id")
-	id,ok := ctx.GetPostForm("id")
+	id,ok := util.Input(ctx,"id")
 	if !ok {
 		util.ResponseJson(ctx,enums.ACTIVITY_JOIN_PARAM_ERR,"参数不能为空",nil)
 		return
 	}
+
+	fmt.Println(id)
 
 	userId,cok := uid.(float64)
 	if !cok {
@@ -119,12 +121,12 @@ func Join(ctx *gin.Context)  {
 		return
 	}
 
-	err := service.ActivityJoin(db,id,int64(userId))
+	err := service.ActivityJoin(db,id.(string),int64(userId))
 	if err != nil {
 		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
 		return
 	}
 
-	util.ResponseJson(ctx,enums.SUCCESS,"排队中...",nil)
+	util.ResponseJson(ctx,enums.SUCCESS,"处理中...",nil)
 	return
 }
