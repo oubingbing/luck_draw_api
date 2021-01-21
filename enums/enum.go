@@ -6,6 +6,7 @@ const (
 	FAIL 					= 1
 	DB_CONNECT_ERR 			= 2
 	READ_CONFIG_ERR			= 3
+	DECODE_ARR_ERR			= 4
 )
 
 //授权相关 1000 ~ 1999
@@ -25,6 +26,7 @@ const (
 	AUTH_TOKEN_NULL					= 1011		//token为空
 	AUTH_NOT_LOGIN					= 1012		//未登录
 	Auth_TRANS_UID_ERR				= 1013		//userId类型转化失败
+	AUTH_USER_NOT_FOUND				= 1014		//用户不存在
 )
 
 //活动相关 2000 ~ 2999

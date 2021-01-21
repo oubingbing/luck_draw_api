@@ -24,6 +24,12 @@ func InitRouter() *gin.Engine {
 	auth := router.Group("/api")
 	auth.Use(middleware.Auth())
 	{
+		//用户登录检测
+		auth.GET("/user/check_login",controller.CheckLogin)
+		//用户信息
+		auth.GET("/user/info",controller.GetUserInfo)
+
+
 		//新建活动
 		auth.POST("/activity/create",controller.CreateActivity)
 

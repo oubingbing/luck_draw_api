@@ -39,3 +39,8 @@ func (user *User)Update(db *gorm.DB,id uint,data map[string]interface{}) error {
 	err := db.Table(user.TableName()).Where("id = ?",id).Updates(data).Error
 	return err
 }
+
+func (user *User)FindById(db *gorm.DB,id int64) error {
+	err := db.Table(user.TableName()).Where("id = ?",id).First(user).Error
+	return err
+}

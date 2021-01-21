@@ -112,7 +112,6 @@ func Join(ctx *gin.Context)  {
 		util.ResponseJson(ctx,enums.Auth_TRANS_UID_ERR,enums.UserIdTransErr.Error(),nil)
 		return
 	}
-	util.Info(fmt.Sprintf("用户user_id:%v",userId))
 
 	db,connectErr := model.Connect()
 	if connectErr != nil {

@@ -39,9 +39,11 @@ type ActivityDetailFormat struct {
 	JoinLimitNum 	float32
 	Des 			string
 	Attachments 	string
+	AttachmentsSli 	[]string
 	Status 			int8
 	ShareTitle 		string
 	ShareImage 		string
+	ShareImageSli 	[]string
 	CreatedAt 		time.Time
 	Gift      		*GiftDetail
 }
@@ -57,11 +59,12 @@ type GiftParam struct {
 }
 
 type GiftDetail struct {
-	ID			uint
-	Name 		string
-	UserId 		int
-	Num 		float32
-	Type 		int8
-	Des    		string
-	Attachments string
+	ID				uint
+	Name 			string
+	UserId 			int
+	Num 			float32
+	Type 			int8
+	Des    			string
+	Attachments		string
+	AttachmentsSli 	[]string
 }

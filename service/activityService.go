@@ -68,16 +68,40 @@ func ActivityPage(db *gorm.DB,page *model.PageParam) (model.AcPage,*enums.ErrorI
 		return nil,err
 	}
 
-	config,_ := util.GetConfig()
-	domain := config["COS_DOMAIN"]
 	for index,_ := range activities {
-		var sli []string
-		_ = json.Unmarshal([]byte(activities[index].Attachments),&sli)
-		activities[index].AttachmentsSli = append(activities[index].AttachmentsSli, domain+"/"+sli[0])
+		activities[index].AttachmentsSli,err = AppendDomain(activities[index].Attachments)
+		if err != nil {
+			return nil,err
+		}
 		activities[index].Attachments = ""
 	}
 
 	return activities,nil
+}
+
+func StrToArr(str string) ([]string,*enums.ErrorInfo) {
+	var sli []string
+	err := json.Unmarshal([]byte(str),&sli)
+	if err != nil {
+		return nil,&enums.ErrorInfo{enums.DecodeErr,enums.DECODE_ARR_ERR}
+	}
+
+	return sli,nil
+}
+
+func AppendDomain(str string) ([]string,*enums.ErrorInfo) {
+	config,_ := util.GetConfig()
+	domain := config["COS_DOMAIN"]
+	sli,err := StrToArr(str)
+	if err != nil {
+		return nil,err
+	}
+
+	for index,_ := range sli {
+		sli[index] = domain+"/"+sli[index]
+	}
+
+	return sli,nil
 }
 
 func ActivityDetail(db *gorm.DB,id string) (*enums.ActivityDetailFormat,*enums.ErrorInfo) {
@@ -100,6 +124,25 @@ func ActivityDetail(db *gorm.DB,id string) (*enums.ActivityDetailFormat,*enums.E
 		return nil,&enums.ErrorInfo{giftNotFound,enums.GIFT_NOT_FOUND}
 	}
 	detail.Gift = giftDetail
+
+	var parseErr *enums.ErrorInfo
+	detail.AttachmentsSli,parseErr = AppendDomain(detail.Attachments)
+	if parseErr != nil {
+		return nil,parseErr
+	}
+	detail.Attachments = ""
+
+	detail.ShareImageSli,parseErr = AppendDomain(detail.ShareImage)
+	if parseErr != nil {
+		return nil,parseErr
+	}
+	detail.ShareImage = ""
+
+	detail.Gift.AttachmentsSli,parseErr = AppendDomain(detail.Gift.Attachments)
+	if parseErr != nil {
+		return nil,parseErr
+	}
+	detail.Gift.Attachments = ""
 
 	return detail,nil
 }

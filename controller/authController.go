@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"luck_draw/enums"
 	"luck_draw/model"
@@ -48,5 +49,41 @@ func Login(ctx *gin.Context)  {
 	}
 
 	util.ResponseJson(ctx,enums.SUCCESS,"",token)
+	return
+}
+
+func CheckLogin(ctx *gin.Context)  {
+	util.ResponseJson(ctx,enums.SUCCESS,"",nil)
+	return
+}
+
+func GetUserInfo(ctx *gin.Context)  {
+	uid,_ := ctx.Get("user_id")
+	userId,cok := uid.(float64)
+	if !cok {
+		util.ErrDetail(enums.Auth_TRANS_UID_ERR,fmt.Sprintf("ID转化异常，用户user_id:%v",uid),cok)
+		util.ResponseJson(ctx,enums.Auth_TRANS_UID_ERR,enums.UserIdTransErr.Error(),nil)
+		return
+	}
+
+	db,connectErr := model.Connect()
+	if connectErr != nil {
+		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
+		return
+	}
+
+	user,err := service.FindUserById(db,int64(userId))
+	if err != nil {
+		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["id"] 			= user.ID
+	data["nickname"] 	= user.NickName
+	data["gender"] 		= user.Gender
+	data["avatar"] 		= user.AvatarUrl
+
+	util.ResponseJson(ctx,enums.SUCCESS,"",data)
 	return
 }

@@ -125,13 +125,23 @@ func getSessionUrl(config map[string]string,code string) string {
 	var strBuilder strings.Builder
 	strBuilder.WriteString(WECHAT_MINI_AUTH)
 	strBuilder.WriteString("?appId=")
-	strBuilder.WriteString(config["APP_ID"])
+	strBuilder.WriteString(config["WX_APP_ID"])
 	strBuilder.WriteString("&secret=")
-	strBuilder.WriteString(config["APP_SECRET"])
+	strBuilder.WriteString(config["WX_APP_SECRET"])
 	strBuilder.WriteString("&js_code=")
 	strBuilder.WriteString(code)
 	strBuilder.WriteString("&grant_type=authorization_code")
 	return strBuilder.String()
+}
+
+func FindUserById(db *gorm.DB,id int64) (*model.User,*enums.ErrorInfo) {
+	user := &model.User{}
+	err := user.FindById(db,id)
+	if err == gorm.ErrRecordNotFound {
+		return nil,&enums.ErrorInfo{enums.UserNotFound,enums.AUTH_USER_NOT_FOUND}
+	}
+
+	return user,nil
 }
 
 
