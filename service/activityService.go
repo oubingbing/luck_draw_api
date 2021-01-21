@@ -175,13 +175,23 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (*enums.ErrorInfo) {
 	}
 
 	//写入参与日志
-	_,joinLogErr := SaveJoinLog(tx,int64(activity.ID),userId)
+	joinLog,joinLogErr := SaveJoinLog(tx,int64(activity.ID),userId)
 	if joinLogErr != nil {
 		tx.Rollback()
 		return joinLogErr
 	}
-	
-	//加入Redis队列进行参与活动
+
+	//加入队列
+	var ctx = context.Background()
+	redis := util.NewRedis()
+	intCmd := redis.Client.LPush(ctx,enums.ACTIVITY_QUEUE,joinLog.ID)
+	if intCmd.Err() != nil {
+		util.ErrDetail(
+			enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,
+			enums.ActivityPushQueueErr.Error(),
+			fmt.Sprintf("activity_id:%v，user_id:%v",activity.ID,userId))
+		return &enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:enums.ActivityPushQueueErr}
+	}
 
 	tx.Commit()
 
@@ -227,19 +237,6 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64) (*model.JoinLog,*enu
 				fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
 			return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:saveJoinLogFail}
 		}
-
-		//加入队列
-		var ctx = context.Background()
-		redis := util.Redis()
-		intCmd := redis.LPush(ctx,enums.ACTIVITY_QUEUE,joinLog.ID)
-		if intCmd.Err() != nil {
-			util.ErrDetail(
-				enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,
-				enums.ActivityPushQueueErr.Error(),
-				fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
-			return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:enums.ActivityPushQueueErr}
-		}
-
 		return joinLog,nil
 	}else{
 		return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_REPEAT,Err:existsJoinLog}

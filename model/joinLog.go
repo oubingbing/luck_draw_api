@@ -35,3 +35,22 @@ func (joinLog *JoinLog) FindByUserActivity(db *gorm.DB,activityId int64,userId i
 	fmt.Printf(":%v\n,error:%v",db.RecordNotFound(),err)
 	return err
 }
+
+func (joinLog *JoinLog) FindById(db *gorm.DB,id string) error {
+	err := db.Table(joinLog.TableName()).Where("id = ?",id).First(joinLog).Error
+	return err
+}
+
+func (joinLog *JoinLog)Update(db *gorm.DB,id uint,data map[string]interface{}) error {
+	err := db.Table(joinLog.TableName()).Where("id = ?",id).Updates(data).Error
+	return err
+}
+
+func (joinLog *JoinLog)LockById(db *gorm.DB,id string) error {
+	err := db.Table(joinLog.TableName()).
+		Set("gorm:query_option", "FOR UPDATE").
+		Where("id = ?",id).
+		First(joinLog).Error
+
+	return err
+}

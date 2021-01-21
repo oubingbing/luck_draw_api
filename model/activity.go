@@ -94,11 +94,16 @@ func (activity *Activity) Detail(db *gorm.DB,id string) (*enums.ActivityDetailFo
 	return activityDetail,db.RecordNotFound(),err
 }
 
-func (activity *Activity)LockById(db *gorm.DB,id string) error {
+func (activity *Activity)LockById(db *gorm.DB,id interface{}) error {
 	err := db.Table(activity.TableName()).
 		Set("gorm:query_option", "FOR UPDATE").
 		Where("id = ?",id).
 		First(activity).Error
 
+	return err
+}
+
+func (activity *Activity)Update(db *gorm.DB,id uint,data map[string]interface{}) error {
+	err := db.Table(activity.TableName()).Where("id = ?",id).Updates(data).Error
 	return err
 }

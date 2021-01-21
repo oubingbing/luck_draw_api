@@ -30,6 +30,10 @@ var (
 //活动
 var (
 	ActivityPushQueueErr			= errors.New("参加活动写入队列失败")
+	ActivityQueueNotFound			= errors.New("处理的参加活动队列记录不存在")
+	ActivityQueueANotFound			= errors.New("处理的参加活动队列的活动记录不存在")
+	ActivityJoinLogUpdateFailErr	= errors.New("更新活动参与记录因为加入活动因为人数已满失败出错")
+	ActivityUpdateJoinNumFailErr	= errors.New("更新活动参与人数出错")
 )
 
 //读取配置

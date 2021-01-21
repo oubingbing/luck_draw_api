@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"luck_draw/queue"
 	"luck_draw/routers"
 	"luck_draw/util"
 	"net/http"
@@ -9,6 +10,8 @@ import (
 
 func main() {
 	router:= routers.InitRouter()
+
+	go queue.Listen()
 
 	server := &http.Server{
 		Addr:           ":8081",
