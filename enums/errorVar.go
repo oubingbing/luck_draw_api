@@ -27,6 +27,11 @@ var (
 	UserNotFound					= errors.New("用户不存在")  						//userId转换异常
 )
 
+//活动
+var (
+	ActivityPushQueueErr			= errors.New("参加活动写入队列失败")
+)
+
 //读取配置
 var (
 	ReadConfigErr					= errors.New("配置信息错误")

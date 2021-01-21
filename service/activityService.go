@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -202,7 +203,7 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64) (*model.JoinLog,*enu
 		return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_QUERY_ERR,Err:queryJoinLogDbErr}
 	}
 
-	//如果还有错，那一定是record not found
+	//record not found
 	if gorm.IsRecordNotFoundError(err) {
 		joinLog.ActivityId = activityId
 		joinLog.UserId = userId
@@ -225,6 +226,18 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64) (*model.JoinLog,*enu
 				fmt.Sprintf("写入参与日志失败：%v",effect),
 				fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
 			return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:saveJoinLogFail}
+		}
+
+		//加入队列
+		var ctx = context.Background()
+		redis := util.Redis()
+		intCmd := redis.LPush(ctx,enums.ACTIVITY_QUEUE,joinLog.ID)
+		if intCmd.Err() != nil {
+			util.ErrDetail(
+				enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,
+				enums.ActivityPushQueueErr.Error(),
+				fmt.Sprintf("activity_id:%v，user_id:%v",activityId,userId))
+			return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:enums.ActivityPushQueueErr}
 		}
 
 		return joinLog,nil

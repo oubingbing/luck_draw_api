@@ -45,6 +45,7 @@ const (
 	ACTIVITY_JOIN_SAVE_LOG_FAIL		= 2011		//参加活动失败
 	ACTIVITY_JOIN_REPEAT			= 2012		//您已参加该活动，不可重复参加
 	ACTIVITY_JOIN_QUERY_ERR			= 2013		//查询参与日志出错
+	ACTIVITY_PUSH_QUEUE_ERR			= 2014		//参加活动写入队列失败
 )
 
 //礼品相关 3000 ~ 3999
@@ -54,5 +55,7 @@ const (
 	GIFT_NOT_FOUND					= 3002 		//礼品不存在
 	GIFT_GET_DETAIL_ERR				= 3003 		//礼品详情查询错误
 )
+
+const ACTIVITY_QUEUE				= "luck_activity_queue"  //参加活动队列
 
 

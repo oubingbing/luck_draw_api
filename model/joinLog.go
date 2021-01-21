@@ -32,6 +32,6 @@ func (joinLog *JoinLog)Store(db *gorm.DB) (int64,error) {
 
 func (joinLog *JoinLog) FindByUserActivity(db *gorm.DB,activityId int64,userId int64) error {
 	err := db.Where("activity_id = ?",activityId).Where("user_id = ?",userId).First(joinLog).Error
-	fmt.Printf("记录:%v\n,error:%v",db.RecordNotFound(),err)
+	fmt.Printf(":%v\n,error:%v",db.RecordNotFound(),err)
 	return err
 }
