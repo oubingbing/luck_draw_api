@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -53,13 +54,16 @@ func (h HttpClient) Get(url string ,beforeHandle beforeRequestHandle,afterHandle
 /**
  * Post请求
  */
-func (h HttpClient) Post(urlVal string,data url.Values,beforeHandle beforeRequestHandle,afterHandle afterRequestHandle) error {
+func (h HttpClient) Post(urlVal string,data string,beforeHandle beforeRequestHandle,afterHandle afterRequestHandle) error {
 	method  := "POST"
 	client := &http.Client{}
-	req, createErr := http.NewRequest(method, urlVal,  strings.NewReader(data.Encode()))
+
+	req, createErr := http.NewRequest(method, urlVal, bytes.NewBuffer([]byte(data)))
 	if createErr != nil {
 		fmt.Printf("创建失败:%v\n",createErr)
 	}
+
+	req.Header.Set("Content-Type", "application/json")
 
 	if beforeHandle != nil{
 		beforeHandle(req)

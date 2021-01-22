@@ -219,7 +219,6 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64) (*model.JoinLog,*enu
 		joinLog.UserId = userId
 		joinLog.Status = model.JOIN_LOG_STATUS_QUEUE
 		joinLog.Remark = ""
-		joinLog.JoinedAt = nil
 
 		effect,err := joinLog.Store(db)
 		if err != nil {

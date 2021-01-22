@@ -5,6 +5,7 @@ import "errors"
 //公共错误
 var (
 	DecodeErr						= errors.New("数据解析失败")
+	SystemErr						= errors.New("系统异常")
 )
 
 //登录授权
@@ -34,6 +35,11 @@ var (
 	ActivityQueueANotFound			= errors.New("处理的参加活动队列的活动记录不存在")
 	ActivityJoinLogUpdateFailErr	= errors.New("更新活动参与记录因为加入活动因为人数已满失败出错")
 	ActivityUpdateJoinNumFailErr	= errors.New("更新活动参与人数出错")
+)
+
+//socket
+var (
+	SocketEncreyErr					= errors.New("签名异常")
 )
 
 //读取配置

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"github.com/jinzhu/gorm"
 	"time"
 )
@@ -31,8 +30,10 @@ func (joinLog *JoinLog)Store(db *gorm.DB) (int64,error) {
 }
 
 func (joinLog *JoinLog) FindByUserActivity(db *gorm.DB,activityId int64,userId int64) error {
-	err := db.Where("activity_id = ?",activityId).Where("user_id = ?",userId).First(joinLog).Error
-	fmt.Printf(":%v\n,error:%v",db.RecordNotFound(),err)
+	err := db.Where("activity_id = ?",activityId).
+		Where("user_id = ?",userId).
+		Where("status != ?",JOIN_LOG_STATUS_FAIL).
+		First(joinLog).Error
 	return err
 }
 

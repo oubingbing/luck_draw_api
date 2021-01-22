@@ -1,5 +1,9 @@
 package enums
 
+const ACTIVITY_QUEUE				= "luck_activity_queue"  	 //参加活动队列
+const ACTIVITY_QUEUE_TRY			= "luck_activity_queue_try"  //参加活动重试队列
+const SOCKET_USER_TOKEN  			= "luck_api_socket_token"	 //用户socket token
+
 //业务不相关错误
 const (
 	SUCCESS					= 0
@@ -50,6 +54,8 @@ const (
 	ACTIVITY_DEAL_QUEUE_A_NOT_FOUND		= 2016		//处理参加活动队列的活动记录不存在
 	ACTIVITY_DEAL_QUEUE_UPDATE_LOG_ERR	= 2017		//更新活动参与记录因为加入活动因为人数已满失败出错
 	ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR	= 2018		//更新活动参与人数出错
+	ACTIVITY_STATUS_NOT_RUNNING	    	= 2019		//活动不是可参加状态
+	ACTIVITY_MEMBER_ENOUTH		    	= 2020		//活动参加人数已满
 )
 
 //礼品相关 3000 ~ 3999
@@ -60,7 +66,12 @@ const (
 	GIFT_GET_DETAIL_ERR				= 3003 		//礼品详情查询错误
 )
 
-const ACTIVITY_QUEUE				= "luck_activity_queue"  	 //参加活动队列
-const ACTIVITY_QUEUE_TRY			= "luck_activity_queue_try"  //参加活动重试队列
+//socket相关 4000 ~ 4999
+const (
+	SOCKET_ENCRYPE_ERR				= 4000		//生成签名出错
+	SOCKET_SIGN_ENCODE_ERR			= 4001		//sign转成json异常
+	SOCKET_POST_SIGN_ERR			= 4002		//请求授权网络出错
+	SOCKET_AUTH_ERR					= 4003		//请求授权返回失败
+)
 
 

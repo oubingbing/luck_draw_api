@@ -106,8 +106,6 @@ func Join(ctx *gin.Context)  {
 		return
 	}
 
-	fmt.Println(id)
-
 	userId,cok := uid.(float64)
 	if !cok {
 		util.Info(fmt.Sprintf("用户user_id:%v",uid))

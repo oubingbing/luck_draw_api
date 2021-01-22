@@ -29,6 +29,8 @@ func InitRouter() *gin.Engine {
 		//用户信息
 		auth.GET("/user/info",controller.GetUserInfo)
 
+		//socket - 获取授权token
+		auth.GET("/socket/token",controller.GetSocketToken)
 
 		//新建活动
 		auth.POST("/activity/create",controller.CreateActivity)
