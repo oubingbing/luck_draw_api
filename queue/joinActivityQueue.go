@@ -20,6 +20,7 @@ func AttemptJoin(db *gorm.DB,id string)  {
 	defer func() {
 		db.Close()
 		notifyErr := service.SocketNotify(string(userId),finish,msg)
+		util.Info("已加到通知")
 		if notifyErr != nil {
 			util.Error(notifyErr.Error())
 		}

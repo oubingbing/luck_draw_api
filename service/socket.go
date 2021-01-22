@@ -19,6 +19,7 @@ func SocketNotify(userId string,code int,msg string) error {
 
 	token,errInfo = GetSocketToken(userId)
 	if errInfo != nil {
+		util.Info("获取token："+errInfo.Err.Error())
 		return errInfo.Err
 	}
 
@@ -31,13 +32,14 @@ func SocketNotify(userId string,code int,msg string) error {
 	}
 	byteData,encodeErr := json.Marshal(&data)
 	if encodeErr != nil {
+		util.Info("解析错误："+encodeErr.Error())
 		return encodeErr
 	}
 
 	httpClient := &util.HttpClient{}
 	err = httpClient.Post(url,string(byteData),nil, func(resp *http.Response) {
 		body,readErr := ioutil.ReadAll(resp.Body)
-		util.Info(string(body))
+		util.Info("结果返回："+string(body))
 		if readErr != nil {
 			err = readErr
 			util.ErrDetail(enums.SOCKET_AUTH_ERR,"socket消息推送读取数据流失败",readErr.Error())
