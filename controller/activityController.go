@@ -25,6 +25,7 @@ func CreateActivity(ctx *gin.Context)  {
 
 	var effect int64
 	db,connectErr := model.Connect()
+	defer db.Close()
 	if connectErr != nil {
 		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
 		return
@@ -54,6 +55,7 @@ func GetActivities(ctx *gin.Context)  {
 	}
 
 	db,connectErr := model.Connect()
+	defer db.Close()
 	if connectErr != nil {
 		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
 		return
@@ -83,6 +85,7 @@ func GetDetail(ctx *gin.Context)  {
 	userId,_ := uid.(float64)
 
 	db,connectErr := model.Connect()
+	defer db.Close()
 	if connectErr != nil {
 		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
 		return
@@ -117,6 +120,7 @@ func Join(ctx *gin.Context)  {
 	}
 
 	db,connectErr := model.Connect()
+	defer db.Close()
 	if connectErr != nil {
 		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
 		return
@@ -137,6 +141,7 @@ func ActivityLog(ctx *gin.Context)  {
 	status,_:= ctx.GetQuery("status")
 
 	db,connectErr := model.Connect()
+	defer db.Close()
 	if connectErr != nil {
 		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
 		return
