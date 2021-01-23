@@ -105,7 +105,7 @@ func AppendDomain(str string) ([]string,*enums.ErrorInfo) {
 	return sli,nil
 }
 
-func ActivityDetail(db *gorm.DB,id string) (*enums.ActivityDetailFormat,*enums.ErrorInfo) {
+func ActivityDetail(db *gorm.DB,id string,userId float64) (*enums.ActivityDetailFormat,*enums.ErrorInfo) {
 	activity := &model.Activity{}
 	detail,acNotFound,err := activity.Detail(db,id)
 	if err != nil {
@@ -144,6 +144,22 @@ func ActivityDetail(db *gorm.DB,id string) (*enums.ActivityDetailFormat,*enums.E
 		return nil,parseErr
 	}
 	detail.Gift.Attachments = ""
+
+	//用户如果是登录状态再查询抽奖记录
+	fmt.Printf("用户id：%v\n",int64(userId))
+	if int64(userId) > 0 {
+		joinLog := &model.JoinLog{}
+		err = joinLog.FindByUserActivity(db,int64(detail.ID),int64(userId))
+		if err == nil {
+			detail.ActivityLog = make(map[string]interface{})
+			detail.ActivityLog["id"] = joinLog.ID
+			detail.ActivityLog["status"] = joinLog.Status
+			detail.ActivityLog["remark"] = joinLog.Remark
+			detail.ActivityLog["joined_at"] = joinLog.JoinedAt
+		}else{
+			util.Error(err.Error())
+		}
+	}
 
 	return detail,nil
 }
@@ -240,4 +256,27 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64) (*model.JoinLog,*enu
 	}else{
 		return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_REPEAT,Err:existsJoinLog}
 	}
+}
+
+func GetActivityLog(db *gorm.DB,userId interface{},status string) (model.JoinLogPage,*enums.ErrorInfo) {
+	joinLog := &model.JoinLog{}
+	result,err := joinLog.GetByUserId(db,userId,status)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil,nil
+		}else{
+			return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_LOG_QUERY_ERR,Err:enums.SystemErr}
+		}
+	}
+
+	var appendErr *enums.ErrorInfo
+	for index,item := range result {
+		result[index].AttachmentsSli,appendErr = AppendDomain(item.Attachments)
+		if appendErr != nil {
+			return nil,appendErr
+		}
+		result[index].Attachments = ""
+	}
+
+	return result,nil
 }

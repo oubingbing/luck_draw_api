@@ -11,6 +11,7 @@ const (
 	DB_CONNECT_ERR 			= 2
 	READ_CONFIG_ERR			= 3
 	DECODE_ARR_ERR			= 4
+	NOT_FOUND				= 5
 )
 
 //授权相关 1000 ~ 1999
@@ -56,6 +57,7 @@ const (
 	ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR	= 2018		//更新活动参与人数出错
 	ACTIVITY_STATUS_NOT_RUNNING	    	= 2019		//活动不是可参加状态
 	ACTIVITY_MEMBER_ENOUTH		    	= 2020		//活动参加人数已满
+	ACTIVITY_JOIN_LOG_QUERY_ERR		    = 2021		//活动参加记录查询错误
 )
 
 //礼品相关 3000 ~ 3999

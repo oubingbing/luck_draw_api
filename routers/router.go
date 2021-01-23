@@ -10,6 +10,7 @@ func InitRouter() *gin.Engine {
 	router := gin.Default()
 
 	notAuth := router.Group("/api")
+	notAuth.Use(middleware.NoAuth())
 	{
 		//微信登录
 		notAuth.POST("/login",controller.Login)
@@ -37,6 +38,9 @@ func InitRouter() *gin.Engine {
 
 		//活动参与
 		auth.POST("/activity/join",controller.Join)
+
+		//活动参与记录
+		auth.GET("/activity/join_log",controller.ActivityLog)
 
 		//新建礼品
 		auth.POST("/gift/create",controller.CreateGift)

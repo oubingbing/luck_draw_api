@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/jinzhu/gorm"
+	"luck_draw/enums"
 	"time"
 )
 
@@ -9,6 +10,8 @@ const (
 	JOIN_LOG_STATUS_QUEUE			= 1		//排队中
 	JOIN_LOG_STATUS_SUCCESS			= 2		//加入成功
 	JOIN_LOG_STATUS_FAIL			= 3		//加入失败
+	JOIN_LOG_STATUS_WIN				= 4		//已中奖
+	JOIN_LOG_STATUS_LOSE			= 5		//未中奖
 )
 
 type JoinLog struct {
@@ -19,6 +22,8 @@ type JoinLog struct {
 	Remark  		string		`gorm:"column:remark"` 			//备注信息
 	JoinedAt 		*time.Time  `gorm:"column:joined_at"` 		//加入的时间
 }
+
+type JoinLogPage []enums.JoinLogTrans
 
 func (JoinLog) TableName() string  {
 	return "activity_join_log"
@@ -54,4 +59,21 @@ func (joinLog *JoinLog)LockById(db *gorm.DB,id string) error {
 		First(joinLog).Error
 
 	return err
+}
+
+func (joinLog *JoinLog)GetByUserId(db *gorm.DB,userId interface{},status string) (JoinLogPage,error) {
+	var page JoinLogPage
+	builder := db.Table(joinLog.TableName()).
+		Joins("left join activity on activity.id = activity_join_log.activity_id").
+		Select("activity_join_log.id,activity_id,user_id,activity_join_log.status,remark,joined_at,activity_join_log.created_at,activity.name,activity.attachments,activity.join_num,activity.join_limit_num,activity.status as activity_status").
+		Where("user_id = ?",userId)
+
+	var err error
+	if status == "1" {
+		err = builder.Where("activity_join_log.status in (?)",[]int8{JOIN_LOG_STATUS_SUCCESS,JOIN_LOG_STATUS_WIN,JOIN_LOG_STATUS_LOSE}).Find(&page).Error
+	}else{
+		err = builder.Where("activity_join_log.status = ?",status).Find(&page).Error
+	}
+
+	return page,err
 }

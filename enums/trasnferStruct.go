@@ -46,6 +46,7 @@ type ActivityDetailFormat struct {
 	ShareImageSli 	[]string
 	CreatedAt 		time.Time
 	Gift      		*GiftDetail
+	ActivityLog		map[string]interface{}
 }
 
 type GiftParam struct {
@@ -67,4 +68,20 @@ type GiftDetail struct {
 	Des    			string
 	Attachments		string
 	AttachmentsSli 	[]string
+}
+
+type JoinLogTrans struct {
+	ID        		uint
+	ActivityId 		int64
+	UserId			int64
+	Status			int8
+	Remark  		string
+	JoinedAt 		*time.Time
+	CreatedAt 		*time.Time
+	Name 			string
+	Attachments		string
+	AttachmentsSli	[]string
+	JoinNum 		int32
+	JoinLimitNum 	float32
+	ActivityStatus 	int8
 }

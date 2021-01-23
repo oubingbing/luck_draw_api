@@ -74,10 +74,13 @@ func GetActivities(ctx *gin.Context)  {
  */
 func GetDetail(ctx *gin.Context)  {
 	id,ok := ctx.GetQuery("id")
+	uid,_:= ctx.Get("user_id")
 	if !ok {
 		util.ResponseJson(ctx,enums.ACTIVITY_DETAIL_PARAM_ERR,"参数不能为空",nil)
 		return
 	}
+
+	userId,_ := uid.(float64)
 
 	db,connectErr := model.Connect()
 	if connectErr != nil {
@@ -85,7 +88,7 @@ func GetDetail(ctx *gin.Context)  {
 		return
 	}
 
-	activity,err := service.ActivityDetail(db ,id)
+	activity,err := service.ActivityDetail(db ,id,userId)
 	if err != nil {
 		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
 		return
@@ -126,5 +129,25 @@ func Join(ctx *gin.Context)  {
 	}
 
 	util.ResponseJson(ctx,enums.SUCCESS,"处理中...",nil)
+	return
+}
+
+func ActivityLog(ctx *gin.Context)  {
+	uid,_:= ctx.Get("user_id")
+	status,_:= ctx.GetQuery("status")
+
+	db,connectErr := model.Connect()
+	if connectErr != nil {
+		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
+		return
+	}
+
+	result,err := service.GetActivityLog(db,uid,status)
+	if err != nil {
+		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
+		return
+	}
+
+	util.ResponseJson(ctx,enums.SUCCESS,"ok",result)
 	return
 }
