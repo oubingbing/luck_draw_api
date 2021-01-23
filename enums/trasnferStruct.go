@@ -85,3 +85,11 @@ type JoinLogTrans struct {
 	JoinLimitNum 	float32
 	ActivityStatus 	int8
 }
+
+type JoinLogMember struct {
+	ID        		uint
+	ActivityId 		int64
+	UserId			int64
+	NickName		string
+	AvatarUrl		string
+}

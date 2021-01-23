@@ -58,6 +58,8 @@ const (
 	ACTIVITY_STATUS_NOT_RUNNING	    	= 2019		//活动不是可参加状态
 	ACTIVITY_MEMBER_ENOUTH		    	= 2020		//活动参加人数已满
 	ACTIVITY_JOIN_LOG_QUERY_ERR		    = 2021		//活动参加记录查询错误
+	ACTIVITY_JOIN_LOG_QUERY_MEMBER_ERR	= 2022		//活动参与会员查询错误
+	ACTIVITY_Id_EMPYT			     	= 2023		//activity_id为空
 )
 
 //礼品相关 3000 ~ 3999

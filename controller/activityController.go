@@ -156,3 +156,27 @@ func ActivityLog(ctx *gin.Context)  {
 	util.ResponseJson(ctx,enums.SUCCESS,"ok",result)
 	return
 }
+
+func GetActivityMember(ctx *gin.Context)  {
+	activityId,ok:= ctx.GetQuery("activity_id")
+	if !ok {
+		util.ResponseJson(ctx,enums.ACTIVITY_Id_EMPYT,"参数不能为空",nil)
+		return
+	}
+
+	db,connectErr := model.Connect()
+	defer db.Close()
+	if connectErr != nil {
+		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
+		return
+	}
+
+	page,err := service.GetJoinLogMember(db,activityId)
+	if err != nil {
+		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
+		return
+	}
+
+	util.ResponseJson(ctx,enums.SUCCESS,"ok",page)
+	return
+}

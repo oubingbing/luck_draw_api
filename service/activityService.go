@@ -280,3 +280,17 @@ func GetActivityLog(db *gorm.DB,userId interface{},status string) (model.JoinLog
 
 	return result,nil
 }
+
+func GetJoinLogMember(db *gorm.DB,activityId interface{}) (model.JoinLogMemberPage,*enums.ErrorInfo) {
+	joinLog := &model.JoinLog{}
+	page,err := joinLog.FindMember(db,activityId)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil,nil
+		}else{
+			return nil,&enums.ErrorInfo{enums.SystemErr,enums.ACTIVITY_JOIN_LOG_QUERY_MEMBER_ERR}
+		}
+	}
+
+	return page,nil
+}

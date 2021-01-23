@@ -24,6 +24,7 @@ type JoinLog struct {
 }
 
 type JoinLogPage []enums.JoinLogTrans
+type JoinLogMemberPage []enums.JoinLogMember
 
 func (JoinLog) TableName() string  {
 	return "activity_join_log"
@@ -74,6 +75,18 @@ func (joinLog *JoinLog)GetByUserId(db *gorm.DB,userId interface{},status string)
 	}else{
 		err = builder.Where("activity_join_log.status = ?",status).Find(&page).Error
 	}
+
+	return page,err
+}
+
+func (joinLog *JoinLog) FindMember(db *gorm.DB,activityId interface{}) (JoinLogMemberPage,error) {
+	var page JoinLogMemberPage
+	err := db.Table(joinLog.TableName()).
+		Joins("left join wechat_user on wechat_user.id = activity_join_log.user_id").
+		Select("activity_join_log.id,activity_id,user_id,wechat_user.nick_name,wechat_user.avatar_url").
+		Where("activity_id = ?",activityId).
+		Where("activity_join_log.status != ?",JOIN_LOG_STATUS_FAIL).
+		Find(&page).Error
 
 	return page,err
 }

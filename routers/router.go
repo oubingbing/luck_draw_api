@@ -20,6 +20,9 @@ func InitRouter() *gin.Engine {
 
 		//活动详情
 		notAuth.GET("/activity/detail",controller.GetDetail)
+
+		//活动参与人员
+		notAuth.GET("/activity/member",controller.GetActivityMember)
 	}
 
 	auth := router.Group("/api")
