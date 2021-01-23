@@ -105,6 +105,7 @@ func ListenAttemptJoin(wg *sync.WaitGroup)  {
 	redis.OnQueue(wg,queue,t, func(result *redis2.StringSliceCmd, e error) {
 		if len(result.Val()) > 0 {
 			db,connectErr := model.Connect()
+			defer db.Close()
 			if connectErr != nil {
 				//丢到重试
 				return
