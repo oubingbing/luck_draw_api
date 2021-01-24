@@ -96,6 +96,8 @@ func GetDetail(ctx *gin.Context)  {
 		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
 		return
 	}
+	
+	activity.Ad = "adunit-7b7dddf50e628cbd"
 
 	util.ResponseJson(ctx,enums.SUCCESS,"",activity)
 	return

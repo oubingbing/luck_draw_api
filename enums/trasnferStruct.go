@@ -32,6 +32,7 @@ type ActivityDetailFormat struct {
 	ID        		uint
 	Name 			string
 	GiftId 			int64
+	Ad				string
 	Type 			int8
 	OpenAd 			int8
 	FromType 		int8
