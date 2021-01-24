@@ -23,13 +23,14 @@ func InitRouter() *gin.Engine {
 
 		//活动参与人员
 		notAuth.GET("/activity/member",controller.GetActivityMember)
+
+		//首页广告
+		notAuth.GET("/ad/home",controller.AdHome)
 	}
 
 	auth := router.Group("/api")
 	auth.Use(middleware.Auth())
 	{
-		//用户登录检测
-		auth.GET("/user/check_login",controller.CheckLogin)
 		//用户信息
 		auth.GET("/user/info",controller.GetUserInfo)
 

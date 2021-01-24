@@ -33,6 +33,7 @@ type ActivityDetailFormat struct {
 	Name 			string
 	GiftId 			int64
 	Type 			int8
+	OpenAd 			int8
 	FromType 		int8
 	JoinNum 		int32
 	LimitJoin 		int32
