@@ -3,6 +3,7 @@ package enums
 const ACTIVITY_QUEUE				= "luck_activity_queue"  	 //参加活动队列
 const ACTIVITY_QUEUE_TRY			= "luck_activity_queue_try"  //参加活动重试队列
 const SOCKET_USER_TOKEN  			= "luck_api_socket_token"	 //用户socket token
+const DATE_FORMAT  					= "2006-01-02 15:04:05"
 
 //业务不相关错误
 const (
@@ -91,4 +92,11 @@ const (
 	ADDRESS_PAGE_QUERY_ERR		 	= 5007		//地址分页查询错误
 )
 
+//消息盒子相关 6000 ~ 6999
+const (
+	INBOX_CREATE_FAIL				= 6000		//消息保存失败
+	INBOX_UPDATE_READ_FAIL			= 6001		//更新阅读时间错误
+	INBOX_PAGE_QUERY_FAIL			= 6002		//消息列表分页查询失败
+	INBOX_COUNT_QUERY_FAIL			= 6003		//消息盒子统计未读出错
+)
 

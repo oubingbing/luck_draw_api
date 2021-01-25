@@ -55,3 +55,11 @@ var (
 	AddressListQueryERr				= errors.New("地址资料查询失败")
 	AddressPageQueryERr				= errors.New("地址数据查询失败")
 )
+
+//消息盒子
+var (
+	InboxStoreErr					= errors.New("消息保存失败")
+	InboxUpdateReadErr				= errors.New("更新阅读时间错误")
+	InboxPageQueryErr				= errors.New("查询失败")
+	InboxCountQueryErr				= errors.New("查询失败")
+)

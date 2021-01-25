@@ -60,6 +60,15 @@ func InitRouter() *gin.Engine {
 
 		//获取地址表分页
 		auth.GET("/address/page",controller.GetAddressPage)
+
+		//阅读消息盒子
+		auth.PUT("/inbox/read",controller.ReadInbox)
+
+		//消息盒子分页
+		auth.GET("/inbox/page",controller.GetInboxPage)
+
+		//未读消息盒子
+		auth.GET("/inbox/un_read",controller.GetUnReadInbox)
 	}
 
 	return router

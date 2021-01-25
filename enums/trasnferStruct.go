@@ -129,3 +129,12 @@ type AddressPage struct {
 	DetailAddress 	string
 	UseType 		int8
 }
+
+type InboxPage struct {
+	Id 			uint
+	UserId 		int64
+	ObjectType 	int8
+	ObjectId    int64
+	Content     string
+	ReadAt      time.Time
+}
