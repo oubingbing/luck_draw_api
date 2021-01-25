@@ -12,6 +12,7 @@ const (
 	READ_CONFIG_ERR			= 3
 	DECODE_ARR_ERR			= 4
 	NOT_FOUND				= 5
+	SYSTEM_ERR				= 6					//系统异常
 )
 
 //授权相关 1000 ~ 1999
@@ -76,6 +77,18 @@ const (
 	SOCKET_SIGN_ENCODE_ERR			= 4001		//sign转成json异常
 	SOCKET_POST_SIGN_ERR			= 4002		//请求授权网络出错
 	SOCKET_AUTH_ERR					= 4003		//请求授权返回失败
+)
+
+//地址相关 5000 ~ 5999
+const (
+	ADDRESS_USER_ID_ASSERT_ERR		= 5000		//保存地址中user id断言失败
+	ADDRESS_STORE_ERR	 			= 5001		//保存地址数据库异常
+	ADDRESS_STORE_AFFECT_ERR	 	= 5002		//保存地址数据库异常
+	ADDRESS_NOT_FOUND		 		= 5003		//地址记录不存在
+	ADDRESS_FIND_ERR		 		= 5004		//地址记录查询错误
+	ADDRESS_UPDATE_ERR		 		= 5005		//地址记录更新失败
+	ADDRESS_LIST_QUERY_ERR		 	= 5006		//地址资料查询失败
+	ADDRESS_PAGE_QUERY_ERR		 	= 5007		//地址分页查询错误
 )
 
 

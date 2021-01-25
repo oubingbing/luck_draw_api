@@ -95,3 +95,37 @@ type JoinLogMember struct {
 	NickName		string
 	AvatarUrl		string
 }
+
+type AddressParam struct {
+	Receiver 		string		`form:"receiver" json:"receiver"`
+	Phone 			string		`form:"phone" json:"phone"`
+	Nation 			string		`form:"nation" json:"nation"`
+	Province 		string		`form:"province" json:"province"`
+	City 			string		`form:"city" json:"city"`
+	District 		string		`form:"district" json:"district"`
+	DetailAddress 	string		`form:"detail_address" json:"detail_address"`
+	UseType 		int8		`form:"use_type" json:"use_type"` 				//1=默认，2=非默认
+}
+
+type AddressUpdateParam struct {
+	Id 				uint		`form:"id" json:"id"`
+	Receiver 		string		`form:"receiver" json:"receiver"`
+	Phone 			string		`form:"phone" json:"phone"`
+	Nation 			string		`form:"nation" json:"nation"`
+	Province 		string		`form:"province" json:"province"`
+	City 			string		`form:"city" json:"city"`
+	District 		string		`form:"district" json:"district"`
+	DetailAddress 	string		`form:"detail_address" json:"detail_address"`
+	UseType 		int8		`form:"use_type" json:"use_type"` 				//1=默认，2=非默认
+}
+
+type AddressPage struct {
+	Id 				uint
+	Receiver 		string
+	Phone 			string
+	Province 		string
+	City 			string
+	District 		string
+	DetailAddress 	string
+	UseType 		int8
+}

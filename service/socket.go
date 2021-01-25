@@ -62,6 +62,7 @@ func SocketNotify(userId string,code int,msg string) error {
 func GetSocketToken(id string) (interface{},*enums.ErrorInfo) {
 	key := enums.SOCKET_USER_TOKEN+":"+id
 	redisClient := util.NewRedis()
+	defer redisClient.Client.Close()
 	ctx := context.Background()
 	exitKey := redisClient.Client.Get(ctx,key)
 	if len(exitKey.Val()) <= 0 {

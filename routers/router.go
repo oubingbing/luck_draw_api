@@ -49,6 +49,17 @@ func InitRouter() *gin.Engine {
 		//新建礼品
 		auth.POST("/gift/create",controller.CreateGift)
 
+		//新建地址
+		auth.POST("/address/create",controller.CreateAddress)
+
+		//更新地址
+		auth.PUT("/address/update",controller.UpdateAddress)
+
+		//获取地址表信息
+		auth.GET("/address/list",controller.GetAddressList)
+
+		//获取地址表分页
+		auth.GET("/address/page",controller.GetAddressPage)
 	}
 
 	return router

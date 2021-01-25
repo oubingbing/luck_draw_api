@@ -46,3 +46,12 @@ var (
 var (
 	ReadConfigErr					= errors.New("配置信息错误")
 )
+
+//地址
+var (
+	AddressStoreErr					= errors.New("地址保存失败")
+	AddressNotFound					= errors.New("地址记录不存在")
+	AddressUpdateFail				= errors.New("地址记录更新失败")
+	AddressListQueryERr				= errors.New("地址资料查询失败")
+	AddressPageQueryERr				= errors.New("地址数据查询失败")
+)
