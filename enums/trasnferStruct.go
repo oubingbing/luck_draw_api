@@ -97,6 +97,7 @@ type JoinLogMember struct {
 }
 
 type AddressParam struct {
+	ID 				uint		`form:"id" json:"id"`
 	Receiver 		string		`form:"receiver" json:"receiver"`
 	Phone 			string		`form:"phone" json:"phone"`
 	Nation 			string		`form:"nation" json:"nation"`

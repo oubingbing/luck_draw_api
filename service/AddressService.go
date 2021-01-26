@@ -125,7 +125,28 @@ func GetAddressPage(db *gorm.DB,userId interface{},page *model.PageParam) (*mode
 	address := &model.Address{}
 	pageData,err := address.Page(db,userId,page)
 	if err != nil {
+		util.ErrDetail(enums.ADDRESS_PAGE_QUERY_ERR,"地址分页查询出错",err.Error())
 		return nil,&enums.ErrorInfo{enums.AddressPageQueryERr,enums.ADDRESS_PAGE_QUERY_ERR}
 	}
 	return pageData,nil
+}
+
+func AddressDetail(db *gorm.DB,id interface{}) (*model.Address,*enums.ErrorInfo) {
+	address := &model.Address{}
+	err := address.FindById(db,id)
+	if err != nil {
+		return nil,&enums.ErrorInfo{enums.AddressDetailQueryERr,enums.ADDRESS_DETAIL_QUERY_ERR}
+	}
+
+	return address,nil
+}
+
+func DeleteAddress(db *gorm.DB,userId interface{},id interface{}) *enums.ErrorInfo {
+	address := &model.Address{}
+	err := address.Delete(db,userId,id)
+	if err != nil {
+		return &enums.ErrorInfo{enums.AddressDeleteDbErr,enums.ADDRESS_DELETE_DB_ERR}
+	}
+
+	return nil
 }

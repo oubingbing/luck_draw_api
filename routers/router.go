@@ -55,11 +55,17 @@ func InitRouter() *gin.Engine {
 		//更新地址
 		auth.PUT("/address/update",controller.UpdateAddress)
 
+		//删除地址
+		auth.DELETE("/address/delete",controller.DeleteAddress)
+
 		//获取地址表信息
-		auth.GET("/address/list",controller.GetAddressList)
+		//auth.GET("/address/list",controller.GetAddressList)
 
 		//获取地址表分页
 		auth.GET("/address/page",controller.GetAddressPage)
+
+		//获取地址详情
+		auth.GET("/address/detail",controller.GetAddressDetail)
 
 		//阅读消息盒子
 		auth.PUT("/inbox/read",controller.ReadInbox)

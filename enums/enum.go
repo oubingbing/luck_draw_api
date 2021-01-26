@@ -90,6 +90,8 @@ const (
 	ADDRESS_UPDATE_ERR		 		= 5005		//地址记录更新失败
 	ADDRESS_LIST_QUERY_ERR		 	= 5006		//地址资料查询失败
 	ADDRESS_PAGE_QUERY_ERR		 	= 5007		//地址分页查询错误
+	ADDRESS_DETAIL_QUERY_ERR		= 5008		//地址详情查询错误
+	ADDRESS_DELETE_DB_ERR			= 5009		//地址删除错误
 )
 
 //消息盒子相关 6000 ~ 6999

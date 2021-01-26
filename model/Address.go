@@ -88,6 +88,7 @@ func (address *Address)Page(db *gorm.DB,userId interface{},page *PageParam) (*Ad
 	var pageData AddressPageSli
 	err :=  Page(db,address.TableName(),page).
 		Where("user_id = ?",userId).
+		Where("deleted_at is null").
 		Select("id,user_id,receiver,phone,province,city,district,use_type,detail_address").
 		Order(fmt.Sprintf("%v %v",page.OrderBY,page.Sort)).
 		Find(&pageData).Error
@@ -96,4 +97,13 @@ func (address *Address)Page(db *gorm.DB,userId interface{},page *PageParam) (*Ad
 	}
 
 	return &pageData,nil
+}
+
+func (address *Address)Delete(db *gorm.DB,userId interface{},id interface{}) error {
+	err :=  db.Table(address.TableName()).
+		Where("user_id = ?",userId).
+		Where("id = ?",id).
+		Delete(address).Error
+
+	return err
 }

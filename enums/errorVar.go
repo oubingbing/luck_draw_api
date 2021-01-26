@@ -54,6 +54,8 @@ var (
 	AddressUpdateFail				= errors.New("地址记录更新失败")
 	AddressListQueryERr				= errors.New("地址资料查询失败")
 	AddressPageQueryERr				= errors.New("地址数据查询失败")
+	AddressDetailQueryERr			= errors.New("地址数据查询失败")
+	AddressDeleteDbErr  			= errors.New("地址删除失败失败")
 )
 
 //消息盒子
