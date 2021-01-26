@@ -34,8 +34,9 @@ func (inbox *Inbox)Update(db *gorm.DB,id interface{},data map[string]interface{}
 func (inbox *Inbox)Page(db *gorm.DB,userId interface{},page *PageParam) (InboxPageSli,error) {
 	var inboxList InboxPageSli
 	err :=  Page(db,inbox.TableName(),page).
-		Where("user_id = ?",userId).
-		Select("id,user_id,object_type,object_id,content,read_at").
+		Joins("left join activity on activity.id = inbox.object_id").
+		Where("inbox.user_id = ?",userId).
+		Select("inbox.id,inbox.user_id,object_type,object_id,inbox.content,read_at,activity.name,activity.attachments").
 		Order("id desc").
 		Find(&inboxList).Error
 

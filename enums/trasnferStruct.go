@@ -132,10 +132,13 @@ type AddressPage struct {
 }
 
 type InboxPage struct {
-	Id 			uint
-	UserId 		int64
-	ObjectType 	int8
-	ObjectId    int64
-	Content     string
-	ReadAt      time.Time
+	Id 				uint
+	UserId 			int64
+	ObjectType 		int8
+	ObjectId    	int64
+	Content     	string
+	ReadAt      	string
+	Attachments 	string
+	AttachmentsSli 	[]string
+	Name 			string
 }
