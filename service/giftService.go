@@ -32,13 +32,12 @@ func SaveGift(db *gorm.DB,userId int,giftParam *enums.GiftParam) (int64,*enums.E
 
 func FirstGiftById(db *gorm.DB,id int64) (*enums.GiftDetail,*enums.ErrorInfo) {
 	gift := &model.Gift{}
-	detail,notFound,err := gift.First(db,id)
+	detail,err := gift.First(db,id)
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil,&enums.ErrorInfo{giftNotFound,enums.GIFT_NOT_FOUND}
+		}
 		return nil,&enums.ErrorInfo{err,enums.GIFT_FIRST_ERR}
-	}
-
-	if notFound {
-		return nil,&enums.ErrorInfo{giftNotFound,enums.GIFT_NOT_FOUND}
 	}
 
 	return detail,nil

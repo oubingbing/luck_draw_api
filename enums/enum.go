@@ -1,9 +1,12 @@
 package enums
 
-const ACTIVITY_QUEUE				= "luck_activity_queue"  	 //参加活动队列
-const ACTIVITY_QUEUE_TRY			= "luck_activity_queue_try"  //参加活动重试队列
-const SOCKET_USER_TOKEN  			= "luck_api_socket_token"	 //用户socket token
-const DATE_FORMAT  					= "2006-01-02 15:04:05"
+const ACTIVITY_QUEUE						= "luck_activity_queue"  	 			//参加活动队列
+const ACTIVITY_HANDLE_PHONE_BILL_QUEUE		= "luck_handle_phone_bill_queue"  	 	//话费充值队列
+const ACTIVITY_HANDLE_REA_PAK_QUEUE			= "luck_handle_red_pak_queue"  	 		//发送红包队列
+const ACTIVITY_HANDLE_GIFT_QUEUE			= "luck_handle_gift_queue"  	 		//抽礼品队列
+const ACTIVITY_QUEUE_TRY					= "luck_activity_queue_try"  			//参加活动重试队列
+const SOCKET_USER_TOKEN  					= "luck_api_socket_token"	 			//用户socket token
+const DATE_FORMAT  							= "2006-01-02 15:04:05"
 
 //业务不相关错误
 const (
@@ -62,6 +65,11 @@ const (
 	ACTIVITY_JOIN_LOG_QUERY_ERR		    = 2021		//活动参加记录查询错误
 	ACTIVITY_JOIN_LOG_QUERY_MEMBER_ERR	= 2022		//活动参与会员查询错误
 	ACTIVITY_Id_EMPYT			     	= 2023		//activity_id为空
+	ACTIVITY_GET_RUNNING_ERR			= 2024		//完结活动时获取数据错误
+	ACTIVITY_DEAL_NOT_HANDLE			= 2025		//未找到对应的活动处理函数
+	ACTIVITY_PUSH_BILL_QUEUE_ERR		= 2026		//推送到话费发货队列失败
+	ACTIVITY_FINDISH_DB_ERR				= 2027		//活动变更为已完成数据库出错
+	ACTIVITY_UPDATE_CONSUME_DB_ERR		= 2028		//活动更新实际消耗奖品数量出错
 )
 
 //礼品相关 3000 ~ 3999

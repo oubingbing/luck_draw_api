@@ -60,12 +60,11 @@ func (gift *Gift)Store(db *gorm.DB) (int64,error) {
 	return result.RowsAffected,result.Error
 }
 
-func (gift *Gift)First(db *gorm.DB,id int64) (*enums.GiftDetail,bool,error) {
+func (gift *Gift)First(db *gorm.DB,id int64) (*enums.GiftDetail,error) {
 	detail := &enums.GiftDetail{}
-	notFound := db.Table(gift.TableName()).
+	err := db.Table(gift.TableName()).
 		Select("name,user_id,num,type,des,attachments").
 		Where("id = ?",id).
-		First(detail).
-		RecordNotFound()
-	return detail,notFound,db.Error
+		First(detail).Error
+	return detail,err
 }

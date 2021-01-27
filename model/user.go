@@ -19,6 +19,7 @@ type User struct {
 	Language		string		`gorm:"column:language"`
 	Province		string		`gorm:"column:province"`
 	FromType		int8		`gorm:"column:from_type"`		//用户来源,1=小程序，2=h5公众号
+	Phone			string		`gorm:"column:phone"`
 }
 
 func (User) TableName() string  {

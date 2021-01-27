@@ -90,3 +90,12 @@ func (joinLog *JoinLog) FindMember(db *gorm.DB,activityId interface{}) (JoinLogM
 
 	return page,err
 }
+
+func (joinLog *JoinLog) GetJoinLogByActivityId(db *gorm.DB,activityId uint) ([]JoinLog,error) {
+	var joinLogSli []JoinLog
+	err := db.Where("activity_id = ?",activityId).
+		Where("deleted_at is null").
+		Where("status = ?",JOIN_LOG_STATUS_SUCCESS).
+		Find(&joinLogSli).Error
+	return joinLogSli,err
+}

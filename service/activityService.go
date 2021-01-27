@@ -117,13 +117,15 @@ func ActivityDetail(db *gorm.DB,id string,userId float64) (*enums.ActivityDetail
 	}
 
 	gift := &model.Gift{}
-	giftDetail,notFound,err := gift.First(db,detail.GiftId)
+	giftDetail,err := gift.First(db,detail.GiftId)
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil,&enums.ErrorInfo{giftNotFound,enums.GIFT_NOT_FOUND}
+		}
+
 		return nil,&enums.ErrorInfo{err,enums.GIFT_GET_DETAIL_ERR}
 	}
-	if notFound {
-		return nil,&enums.ErrorInfo{giftNotFound,enums.GIFT_NOT_FOUND}
-	}
+
 	detail.Gift = giftDetail
 
 	var parseErr *enums.ErrorInfo

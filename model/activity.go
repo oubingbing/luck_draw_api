@@ -36,6 +36,18 @@ const (
 
 )
 
+//抽奖方式，1=平均，2=拼手气
+const (
+	ACTIVITY_DRAW_TYPE_AVERAGE = 1
+	ACTIVITY_DRAW_TYPE_RAND    = 2
+)
+
+//是否真的送奖品，0=否，1=是 really
+const (
+	ACTIVITY_REALLY_N 			= 0
+	ACTIVITY_REALLY_Y 			= 1
+)
+
 type Activity struct {
 	gorm.Model
 	Name 			string 		`gorm:"column:name"`
@@ -54,6 +66,9 @@ type Activity struct {
 	Status 			int8		`gorm:"column:status"` 			//活动状态
 	ShareTitle 		string    	`gorm:"column:share_title"` 	//分享标题
 	ShareImage 		string    	`gorm:"column:share_image"` 	//分享图片
+	DrawType 		int8    	`gorm:"column:draw_type"`
+	Really 			int8    	`gorm:"column:really"`
+	Consume			float32		`gorm:"column:consume"`
 }
 
 
@@ -106,4 +121,13 @@ func (activity *Activity)LockById(db *gorm.DB,id interface{}) error {
 func (activity *Activity)Update(db *gorm.DB,id uint,data map[string]interface{}) error {
 	err := db.Table(activity.TableName()).Where("id = ?",id).Updates(data).Error
 	return err
+}
+
+func (activity *Activity) RunningActivity(db *gorm.DB) ([]Activity,error) {
+	var data []Activity
+	err := db.Table(activity.TableName()).
+		Where("deleted_at is null").
+		Where("status = ?",ACTIVITY_STATSUS_RUNNING).
+		Find(&data).Error
+	return data,err
 }
