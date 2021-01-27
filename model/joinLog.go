@@ -14,6 +14,11 @@ const (
 	JOIN_LOG_STATUS_LOSE			= 5		//未中奖
 )
 
+const (
+	FAKER_N 						= 0		//真用户
+	FAKER_Y 						= 1		//假用户
+)
+
 type JoinLog struct {
 	gorm.Model
 	ActivityId 		int64		`gorm:"column:activity_id"` 	//参与活动
@@ -21,6 +26,7 @@ type JoinLog struct {
 	Status			int8		`gorm:"column:status"` 			//状态，1=排队中，2=加入成功，3=加入失败
 	Remark  		string		`gorm:"column:remark"` 			//备注信息
 	JoinedAt 		*time.Time  `gorm:"column:joined_at"` 		//加入的时间
+	Faker			int8		`gorm:"column:faker"`
 }
 
 type JoinLogPage []enums.JoinLogTrans

@@ -70,6 +70,7 @@ const (
 	ACTIVITY_PUSH_BILL_QUEUE_ERR		= 2026		//推送到话费发货队列失败
 	ACTIVITY_FINDISH_DB_ERR				= 2027		//活动变更为已完成数据库出错
 	ACTIVITY_UPDATE_CONSUME_DB_ERR		= 2028		//活动更新实际消耗奖品数量出错
+	ACTIVITY_PUSH_GIFT_QUEUE_ERR		= 2029		//推送到物品发货队列失败
 )
 
 //礼品相关 3000 ~ 3999
