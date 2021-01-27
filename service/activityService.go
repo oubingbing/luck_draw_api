@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -169,7 +168,7 @@ func ActivityDetail(db *gorm.DB,id string,userId float64) (*enums.ActivityDetail
 /**
  * 进入参与活动队列
  */
-func ActivityJoin(db *gorm.DB,id string,userId int64) (*enums.ErrorInfo) {
+func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 	activity := &model.Activity{}
 	tx := db.Begin()
 
@@ -178,29 +177,29 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (*enums.ErrorInfo) {
 	if err != nil {
 		tx.Rollback()
 		util.ErrDetail(enums.ACTIVITY_DETAIL_QUERY_ERR,"活动详情查询错误-"+err.Error(),id)
-		return &enums.ErrorInfo{err,enums.ACTIVITY_DETAIL_QUERY_ERR}
+		return 0,&enums.ErrorInfo{err,enums.ACTIVITY_DETAIL_QUERY_ERR}
 	}
 
 	if err == gorm.ErrRecordNotFound {
 		tx.Rollback()
 		util.ErrDetail(enums.ACTIVITY_DETAIL_NOT_FOUND,"活动详情不存在-",id)
-		return &enums.ErrorInfo{activityDetailNotFound,enums.ACTIVITY_DETAIL_NOT_FOUND}
+		return 0,&enums.ErrorInfo{activityDetailNotFound,enums.ACTIVITY_DETAIL_NOT_FOUND}
 	}
 
 	if float32(activity.JoinNum) >= activity.JoinLimitNum {
 		tx.Rollback()
-		return &enums.ErrorInfo{joinLimit,enums.ACTIVITY_JOIN_LIMIT}
+		return 0,&enums.ErrorInfo{joinLimit,enums.ACTIVITY_JOIN_LIMIT}
 	}
 
 	//写入参与日志
 	joinLog,joinLogErr := SaveJoinLog(tx,int64(activity.ID),userId)
 	if joinLogErr != nil {
 		tx.Rollback()
-		return joinLogErr
+		return 0,joinLogErr
 	}
 
 	//加入队列
-	var ctx = context.Background()
+	/*var ctx = context.Background()
 	redis := util.NewRedis()
 	intCmd := redis.Client.LPush(ctx,enums.ACTIVITY_QUEUE,joinLog.ID)
 	if intCmd.Err() != nil {
@@ -208,12 +207,12 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (*enums.ErrorInfo) {
 			enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,
 			enums.ActivityPushQueueErr.Error(),
 			fmt.Sprintf("activity_id:%v，user_id:%v",activity.ID,userId))
-		return &enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:enums.ActivityPushQueueErr}
-	}
+		return 0,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:enums.ActivityPushQueueErr}
+	}*/
 
 	tx.Commit()
 
-	return nil
+	return joinLog.ID,nil
 }
 
 /**

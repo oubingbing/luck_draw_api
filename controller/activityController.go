@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"luck_draw/enums"
 	"luck_draw/model"
+	"luck_draw/queue"
 	"luck_draw/service"
 	"luck_draw/util"
 )
@@ -128,14 +129,22 @@ func Join(ctx *gin.Context)  {
 		return
 	}
 
-	err := service.ActivityJoin(db,id.(string),int64(userId))
+	logId,err := service.ActivityJoin(db,id.(string),int64(userId))
 	if err != nil {
 		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
 		return
 	}
 
-	util.ResponseJson(ctx,enums.SUCCESS,"处理中...",nil)
-	return
+	fmt.Printf("id是什么：%v\n",logId)
+	msg,finish := queue.AttemptJoin(db,logId)
+	fmt.Printf("是否完成：%v\n",finish)
+	if finish != 0 {
+		util.ResponseJson(ctx,enums.FAIL,msg,nil)
+		return
+	}else{
+		util.ResponseJson(ctx,enums.SUCCESS,msg,nil)
+		return
+	}
 }
 
 func ActivityLog(ctx *gin.Context)  {

@@ -59,7 +59,7 @@ func (joinLog *JoinLog)Update(db *gorm.DB,id uint,data map[string]interface{}) e
 	return err
 }
 
-func (joinLog *JoinLog)LockById(db *gorm.DB,id string) error {
+func (joinLog *JoinLog)LockById(db *gorm.DB,id interface{}) error {
 	err := db.Table(joinLog.TableName()).
 		Set("gorm:query_option", "FOR UPDATE").
 		Where("id = ?",id).
@@ -76,8 +76,8 @@ func (joinLog *JoinLog)GetByUserId(db *gorm.DB,userId interface{},status string)
 		Where("user_id = ?",userId)
 
 	var err error
-	if status == "1" {
-		err = builder.Where("activity_join_log.status in (?)",[]int8{JOIN_LOG_STATUS_SUCCESS,JOIN_LOG_STATUS_WIN,JOIN_LOG_STATUS_LOSE}).Find(&page).Error
+	if status == "0" {
+		err = builder.Find(&page).Error
 	}else{
 		err = builder.Where("activity_join_log.status = ?",status).Find(&page).Error
 	}
