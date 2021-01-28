@@ -127,20 +127,22 @@ func ActivityDetail(db *gorm.DB,id string,userId float64) (*enums.ActivityDetail
 
 	detail.Gift = giftDetail
 
+	config,_ := util.GetConfig()
+	domain := config["COS_DOMAIN"]
 	var parseErr *enums.ErrorInfo
-	detail.AttachmentsSli,parseErr = AppendDomain(detail.Attachments)
+	detail.AttachmentsSli,parseErr = AppendDomain(domain,detail.Attachments)
 	if parseErr != nil {
 		return nil,parseErr
 	}
 	detail.Attachments = ""
 
-	detail.ShareImageSli,parseErr = AppendDomain(detail.ShareImage)
+	detail.ShareImageSli,parseErr = AppendDomain(domain,detail.ShareImage)
 	if parseErr != nil {
 		return nil,parseErr
 	}
 	detail.ShareImage = ""
 
-	detail.Gift.AttachmentsSli,parseErr = AppendDomain(detail.Gift.Attachments)
+	detail.Gift.AttachmentsSli,parseErr = AppendDomain(domain,detail.Gift.Attachments)
 	if parseErr != nil {
 		return nil,parseErr
 	}
@@ -270,9 +272,12 @@ func GetActivityLog(db *gorm.DB,userId interface{},status string) (model.JoinLog
 		}
 	}
 
+	config,_ := util.GetConfig()
+	domain := config["COS_DOMAIN"]
+
 	var appendErr *enums.ErrorInfo
 	for index,item := range result {
-		result[index].AttachmentsSli,appendErr = AppendDomain(item.Attachments)
+		result[index].AttachmentsSli,appendErr = AppendDomain(domain,item.Attachments)
 		if appendErr != nil {
 			return nil,appendErr
 		}

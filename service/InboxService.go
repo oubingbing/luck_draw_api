@@ -50,9 +50,12 @@ func GetInboxList(db *gorm.DB,userId interface{},page *model.PageParam) (model.I
 		}
 	}
 
+	config,_ := util.GetConfig()
+	domain := config["COS_DOMAIN"]
+
 	var ParseErr *enums.ErrorInfo
 	for index,_ := range list {
-		list[index].AttachmentsSli,ParseErr = AppendDomain(list[index].Attachments)
+		list[index].AttachmentsSli,ParseErr = AppendDomain(domain,list[index].Attachments)
 		if ParseErr != nil {
 			return nil,ParseErr
 		}

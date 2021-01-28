@@ -142,3 +142,10 @@ type InboxPage struct {
 	AttachmentsSli 	[]string
 	Name 			string
 }
+
+type UserPhone struct {
+	PhoneNumber string
+	PurePhoneNumber string
+	CountryCode string
+	Watermark map[string]interface{}
+}

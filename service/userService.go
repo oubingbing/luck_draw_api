@@ -74,7 +74,7 @@ func UserUpdate(db *gorm.DB,id uint,nickname string,avatar string) *enums.ErrorI
 /**
  * 通过微信服务器获取用户信息
  */
-func GetSessionInfo(param *enums.WxMiniLoginData) (*model.User,*enums.ErrorInfo) {
+func GetSessionInfo(param *enums.WxMiniLoginData) ([]byte,*enums.ErrorInfo) {
 	config ,configErr := util.GetConfig()
 	if configErr != nil{
 		util.Info(fmt.Sprintf("获取数据失败：%v\n",configErr.Err.Error()))
@@ -104,12 +104,21 @@ func GetSessionInfo(param *enums.WxMiniLoginData) (*model.User,*enums.ErrorInfo)
 		return nil,&enums.ErrorInfo{Code:enums.AUTH_REQUEST_SESSION_RESP_ERR,Err:enums.LoginFail}
 	}
 
-	userData := model.User{}
 	userJson,err := util.AesDecrypt(param.EncryptedData,sessionData["session_key"],param.Iv)
-	util.Info(fmt.Sprintf("解密数据：%v\n",string(userJson)))
-	err = json.Unmarshal(userJson,&userData)
+	util.Error(fmt.Sprintf("GetSessionInfo-解析用户json出错:%v\n,json_data:%v",err,string(userJson)))
 	if err != nil{
 		util.Error(fmt.Sprintf("GetSessionInfo-解析用户json出错:%v\n,json_data:%v",err,string(userJson)))
+		return nil,&enums.ErrorInfo{Code:enums.AUTH_PARSE_JSON_ERR,Err:enums.LoginParseUserJsonErr}
+	}
+
+	return userJson,nil
+}
+
+func BindUser(data []byte) (*model.User,*enums.ErrorInfo) {
+	userData := model.User{}
+	err := json.Unmarshal(data,&userData)
+	if err != nil{
+		util.Error(fmt.Sprintf("GetSessionInfo-解析用户json出错:%v\n,json_data:%v",err,string(data)))
 		return nil,&enums.ErrorInfo{Code:enums.AUTH_PARSE_JSON_ERR,Err:enums.LoginParseUserJsonErr}
 	}
 

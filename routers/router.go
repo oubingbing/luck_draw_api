@@ -33,6 +33,8 @@ func InitRouter() *gin.Engine {
 	{
 		//用户信息
 		auth.GET("/user/info",controller.GetUserInfo)
+		//用户手机号
+		auth.POST("/user/get_phone",controller.GetUserPhone)
 
 		//socket - 获取授权token
 		auth.GET("/socket/token",controller.GetSocketToken)

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"luck_draw/enums"
@@ -30,9 +31,15 @@ func Login(ctx *gin.Context)  {
 	}
 
 
-	userInfo,errInfo := service.GetSessionInfo(&loginData)
+	data,errInfo := service.GetSessionInfo(&loginData)
 	if errInfo != nil {
 		util.ResponseJson(ctx,errInfo.Code,errInfo.Err.Error(),nil)
+		return
+	}
+
+	userInfo,err := service.BindUser(data)
+	if err != nil {
+		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
 		return
 	}
 
@@ -88,4 +95,27 @@ func GetUserInfo(ctx *gin.Context)  {
 
 	util.ResponseJson(ctx,enums.SUCCESS,"",data)
 	return
+}
+
+func GetUserPhone(ctx *gin.Context)  {
+	var loginData enums.WxMiniLoginData
+	if err := ctx.ShouldBind(&loginData); err != nil {
+		util.ResponseJson(ctx,enums.AUTH_PARAMS_ERROR,err.Error(),nil)
+		return
+	}
+
+	userInfo,errInfo := service.GetSessionInfo(&loginData)
+	if errInfo != nil {
+		util.ResponseJson(ctx,errInfo.Code,errInfo.Err.Error(),nil)
+		return
+	}
+
+	fmt.Println(string(userInfo))
+
+	phoneData := &enums.UserPhone{}
+	json.Unmarshal(userInfo,phoneData)
+	fmt.Println(phoneData)
+	util.ResponseJson(ctx,enums.SUCCESS,"",string(userInfo))
+	return
+
 }
