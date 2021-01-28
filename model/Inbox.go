@@ -27,7 +27,7 @@ func (inbox *Inbox)Store(db *gorm.DB) (int64,error) {
 }
 
 func (inbox *Inbox)Update(db *gorm.DB,id interface{},data map[string]interface{}) error {
-	err := db.Table(inbox.TableName()).Where("id = ?",id).Updates(data).Error
+	err := db.Table(inbox.TableName()).Where("deleted_at is null").Where("id = ?",id).Updates(data).Error
 	return err
 }
 
@@ -36,6 +36,7 @@ func (inbox *Inbox)Page(db *gorm.DB,userId interface{},page *PageParam) (InboxPa
 	err :=  Page(db,inbox.TableName(),page).
 		Joins("left join activity on activity.id = inbox.object_id").
 		Where("inbox.user_id = ?",userId).
+		Where("deleted_at is null").
 		Select("inbox.id,inbox.user_id,object_type,object_id,inbox.content,read_at,activity.name,activity.attachments").
 		Order("id desc").
 		Find(&inboxList).Error
@@ -47,6 +48,7 @@ func (inbox *Inbox)CountUnRead(db *gorm.DB,userId interface{}) (int,error) {
 	count := 0
 	err :=  db.Table(inbox.TableName()).
 		Where("user_id = ?",userId).
+		Where("deleted_at is null").
 		Where("read_at is null").
 		Count(&count).Error
 

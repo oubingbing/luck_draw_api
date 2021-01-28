@@ -88,6 +88,7 @@ func (activity *Activity)Store(db *gorm.DB) (int64,error) {
 func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorInfo) {
 	var activities AcPage
 	err :=  Page(db,activity.TableName(),page).
+			Where("deleted_at is null").
 			Where("status in (?)",[]int8{ACTIVITY_STATSUS_RUNNING,ACTIVITY_STATSUS_FINISH}).
 			Select("id,name,gift_id,type,from_type,join_num,attachments,join_limit_num,status").
 			Order("id desc").
@@ -103,6 +104,7 @@ func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorI
 func (activity *Activity) Detail(db *gorm.DB,id string) (*enums.ActivityDetailFormat,bool,error,) {
 	activityDetail := &enums.ActivityDetailFormat{}
 	err := db.Table(activity.TableName()).
+		Where("deleted_at is null").
 		Select("id,name,gift_id,status,type,from_type,open_ad,join_num,limit_join,join_limit_num,des,attachments,share_title,share_image,created_at").
 		Where("id = ?",id).
 		First(activityDetail).Error
@@ -111,6 +113,7 @@ func (activity *Activity) Detail(db *gorm.DB,id string) (*enums.ActivityDetailFo
 
 func (activity *Activity)LockById(db *gorm.DB,id interface{}) error {
 	err := db.Table(activity.TableName()).
+		Where("deleted_at is null").
 		Set("gorm:query_option", "FOR UPDATE").
 		Where("id = ?",id).
 		First(activity).Error
@@ -119,7 +122,7 @@ func (activity *Activity)LockById(db *gorm.DB,id interface{}) error {
 }
 
 func (activity *Activity)Update(db *gorm.DB,id uint,data map[string]interface{}) error {
-	err := db.Table(activity.TableName()).Where("id = ?",id).Updates(data).Error
+	err := db.Table(activity.TableName()).Where("deleted_at is null").Where("id = ?",id).Updates(data).Error
 	return err
 }
 

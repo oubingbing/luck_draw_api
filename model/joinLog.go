@@ -44,18 +44,20 @@ func (joinLog *JoinLog)Store(db *gorm.DB) (int64,error) {
 func (joinLog *JoinLog) FindByUserActivity(db *gorm.DB,activityId int64,userId int64) error {
 	err := db.Where("activity_id = ?",activityId).
 		Where("user_id = ?",userId).
+		Where("deleted_at is null").
 		Where("status != ?",JOIN_LOG_STATUS_FAIL).
 		First(joinLog).Error
 	return err
 }
 
 func (joinLog *JoinLog) FindById(db *gorm.DB,id string) error {
-	err := db.Table(joinLog.TableName()).Where("id = ?",id).First(joinLog).Error
+	err := db.Table(joinLog.TableName()).Where("deleted_at is null").Where("id = ?",id).First(joinLog).Error
 	return err
 }
 
+
 func (joinLog *JoinLog)Update(db *gorm.DB,id uint,data map[string]interface{}) error {
-	err := db.Table(joinLog.TableName()).Where("id = ?",id).Updates(data).Error
+	err := db.Table(joinLog.TableName()).Where("deleted_at is null").Where("id = ?",id).Updates(data).Error
 	return err
 }
 
@@ -63,6 +65,7 @@ func (joinLog *JoinLog)LockById(db *gorm.DB,id interface{}) error {
 	err := db.Table(joinLog.TableName()).
 		Set("gorm:query_option", "FOR UPDATE").
 		Where("id = ?",id).
+		Where("deleted_at is null").
 		First(joinLog).Error
 
 	return err
@@ -73,7 +76,9 @@ func (joinLog *JoinLog)GetByUserId(db *gorm.DB,userId interface{},status string)
 	builder := db.Table(joinLog.TableName()).
 		Joins("left join activity on activity.id = activity_join_log.activity_id").
 		Select("activity_join_log.id,activity_id,user_id,activity_join_log.status,remark,joined_at,activity_join_log.created_at,activity.name,activity.attachments,activity.join_num,activity.join_limit_num,activity.status as activity_status").
+		Where("deleted_at is null").
 		Where("user_id = ?",userId)
+
 
 	var err error
 	if status == "0" {
@@ -91,6 +96,7 @@ func (joinLog *JoinLog) FindMember(db *gorm.DB,activityId interface{}) (JoinLogM
 		Joins("left join wechat_user on wechat_user.id = activity_join_log.user_id").
 		Select("activity_join_log.id,activity_id,user_id,wechat_user.nick_name,wechat_user.avatar_url").
 		Where("activity_id = ?",activityId).
+		Where("deleted_at is null").
 		Where("activity_join_log.status != ?",JOIN_LOG_STATUS_FAIL).
 		Find(&page).Error
 
@@ -100,6 +106,7 @@ func (joinLog *JoinLog) FindMember(db *gorm.DB,activityId interface{}) (JoinLogM
 func (joinLog *JoinLog) GetJoinLogByActivityId(db *gorm.DB,activityId uint) ([]JoinLog,error) {
 	var joinLogSli []JoinLog
 	err := db.Where("activity_id = ?",activityId).
+		Where("deleted_at is null").
 		Where("deleted_at is null").
 		Where("status = ?",JOIN_LOG_STATUS_SUCCESS).
 		Find(&joinLogSli).Error

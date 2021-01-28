@@ -51,7 +51,7 @@ func (address *Address)Store(db *gorm.DB) (int64,error) {
 }
 
 func (address *Address) FindById(db *gorm.DB,id interface{}) error {
-	err := db.Table(address.TableName()).Where("id = ?",id).First(address).Error
+	err := db.Table(address.TableName()).Where("deleted_at is null").Where("id = ?",id).First(address).Error
 	return err
 }
 
@@ -101,6 +101,7 @@ func (address *Address)Page(db *gorm.DB,userId interface{},page *PageParam) (*Ad
 
 func (address *Address)Delete(db *gorm.DB,userId interface{},id interface{}) error {
 	err :=  db.Table(address.TableName()).
+		Where("deleted_at is null").
 		Where("user_id = ?",userId).
 		Where("id = ?",id).
 		Delete(address).Error

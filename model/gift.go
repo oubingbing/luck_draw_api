@@ -63,6 +63,7 @@ func (gift *Gift)Store(db *gorm.DB) (int64,error) {
 func (gift *Gift)First(db *gorm.DB,id int64) (*enums.GiftDetail,error) {
 	detail := &enums.GiftDetail{}
 	err := db.Table(gift.TableName()).
+		Where("deleted_at is null").
 		Select("name,user_id,num,type,des,attachments").
 		Where("id = ?",id).
 		First(detail).Error

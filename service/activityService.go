@@ -68,8 +68,10 @@ func ActivityPage(db *gorm.DB,page *model.PageParam) (model.AcPage,*enums.ErrorI
 		return nil,err
 	}
 
+	config,_ := util.GetConfig()
+	domain := config["COS_DOMAIN"]
 	for index,_ := range activities {
-		activities[index].AttachmentsSli,err = AppendDomain(activities[index].Attachments)
+		activities[index].AttachmentsSli,err = AppendDomain(domain,activities[index].Attachments)
 		if err != nil {
 			return nil,err
 		}
@@ -89,9 +91,7 @@ func StrToArr(str string) ([]string,*enums.ErrorInfo) {
 	return sli,nil
 }
 
-func AppendDomain(str string) ([]string,*enums.ErrorInfo) {
-	config,_ := util.GetConfig()
-	domain := config["COS_DOMAIN"]
+func AppendDomain(domain,str string) ([]string,*enums.ErrorInfo) {
 	sli,err := StrToArr(str)
 	if err != nil {
 		return nil,err

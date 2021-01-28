@@ -33,16 +33,16 @@ func (user *User)Store(db *gorm.DB) (int64,error) {
 }
 
 func (user *User)FindByOpenId(db *gorm.DB,openId string) error {
-	err := db.Table(user.TableName()).Where("open_id = ?",openId).First(user).Error
+	err := db.Table(user.TableName()).Where("deleted_at is null").Where("open_id = ?",openId).First(user).Error
 	return err
 }
 
 func (user *User)Update(db *gorm.DB,id uint,data map[string]interface{}) error {
-	err := db.Table(user.TableName()).Where("id = ?",id).Updates(data).Error
+	err := db.Table(user.TableName()).Where("deleted_at is null").Where("id = ?",id).Updates(data).Error
 	return err
 }
 
 func (user *User)FindById(db *gorm.DB,id int64) error {
-	err := db.Table(user.TableName()).Where("id = ?",id).First(user).Error
+	err := db.Table(user.TableName()).Where("deleted_at is null").Where("id = ?",id).First(user).Error
 	return err
 }
