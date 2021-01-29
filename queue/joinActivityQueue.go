@@ -120,6 +120,7 @@ func ListenAttemptJoin(wg *sync.WaitGroup)  {
 func Listen()  {
 	var wg sync.WaitGroup
 	wg.Add(1)
+	go ListenInbox(&wg)
 	go ListenAttemptJoin(&wg)
 	wg.Wait()
 	//程序退出，需要通知开发人员

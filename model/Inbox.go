@@ -12,7 +12,16 @@ type Inbox struct {
 	ObjectType 	int8   		`gorm:"column:object_type"`		//消息对象类型，1=抽奖，2=共享会员
 	ObjectId    int64   	`gorm:"column:object_id"`
 	Content     string   	`gorm:"column:content"`
-	ReadAt      time.Time	`gorm:"column:read_at"`
+	ReadAt      *time.Time	`gorm:"column:read_at"`
+}
+
+type InboxMessage struct {
+	UserId 			int64
+	JoinLogId 		int64
+	ObjectId    	int64
+	Bill			float64
+	Content     	string
+	ActivityName  	string
 }
 
 type InboxPageSli []enums.InboxPage

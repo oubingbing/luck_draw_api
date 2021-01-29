@@ -12,7 +12,7 @@ func main() {
 	router:= routers.InitRouter()
 
 	go queue.Listen()
-	//go queue.ScanActivity()
+	go queue.ScanActivity()
 
 	server := &http.Server{
 		Addr:           ":8081",

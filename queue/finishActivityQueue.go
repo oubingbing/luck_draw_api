@@ -35,25 +35,31 @@ func FinishRunningActivity()  {
 	}
 
 	for _,item := range data {
-		switch item.Type {
-		case model.ACTIVITY_TYPE_RED_PAK:
-			go HandleReaPackage(item)
-			break
-		case model.ACTIVITY_TYPE_GOODS:
-			go HandleGift(item)
-			break
-		case model.ACTIVITY_TYPE_PHONE_BILL:
-			go HandlePhoneBill(item)
-			break
-		default:
-			util.ErrDetail(enums.ACTIVITY_DEAL_NOT_HANDLE,"完结活动时获取数据错误",item.ID)
+		if float32(item.JoinNum) >= item.JoinLimitNum {
+			switch item.Type {
+			case model.ACTIVITY_TYPE_RED_PAK:
+				go HandleReaPackage(item)
+				break
+			case model.ACTIVITY_TYPE_GOODS:
+				go HandleGift(item)
+				break
+			case model.ACTIVITY_TYPE_PHONE_BILL:
+				go HandlePhoneBill(item)
+				break
+			default:
+				util.ErrDetail(enums.ACTIVITY_DEAL_NOT_HANDLE,"完结活动时获取数据错误",item.ID)
+			}
 		}
 	}
 
 }
 
 //处理话费
-func HandlePhoneBill(activity model.Activity,)  {
+func HandlePhoneBill(activity model.Activity)  {
+	if float32(activity.JoinNum) < activity.JoinLimitNum {
+		return
+	}
+
 	db,connectErr := model.Connect()
 	if connectErr != nil {
 		util.ErrDetail(connectErr.Code,"完结活动时数据库连接错误",connectErr.Err)
@@ -101,19 +107,24 @@ func HandlePhoneBill(activity model.Activity,)  {
 		for _,item := range bill {
 			if averge <= float32(item) {
 				avergeBill = item
+				break
 			}
 		}
 
 		for _,item := range joinLogSli {
-			mp := make(map[string]interface{})
-			mp["user_id"] = item.UserId
-			mp["bill"] = avergeBill
-			mp["join_log_id"] = item.ID
-			mpStr,_ := json.Marshal(&mp)
+			inbox := model.InboxMessage{}
+			inbox.UserId = item.UserId
+			inbox.Bill = float64(avergeBill)
+			inbox.JoinLogId = int64(item.ID)
+			inbox.ObjectId = item.ActivityId
+			inbox.ActivityName = activity.Name
+			inbox.Content = fmt.Sprintf("恭喜您，在活动%v中获得%v元话费，稍后将会充值到您的账户中，请留意手机短信消息",activity.Name,avergeBill)
+			mpStr,_ := json.Marshal(&inbox)
 			consume += int64(avergeBill)
 
 			//推送到队列
-			intCmd := redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_PHONE_BILL_QUEUE,string(mpStr))
+			intCmd := redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
+			intCmd = redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_PHONE_BILL_QUEUE,string(mpStr))
 			if intCmd.Err() != nil {
 				util.ErrDetail(enums.ACTIVITY_PUSH_BILL_QUEUE_ERR,fmt.Sprintf("推送到话费发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,item.UserId),intCmd.Err().Error())
 			}
@@ -122,14 +133,17 @@ func HandlePhoneBill(activity model.Activity,)  {
 	}else{
 		//拼手气,人人有份
 		var avergeBill int64 = 1 //需要送的话费
-		user := make(map[int]map[string]int64)
+		user := make(map[int]*model.InboxMessage)
 		for index,item := range joinLogSli {
-			mp := make(map[string]int64)
-			mp["user_id"] = item.UserId
-			mp["join_log_id"] = int64(item.ID)
-			mp["bill"] = avergeBill
+			inbox := model.InboxMessage{}
+			inbox.UserId = item.UserId
+			inbox.JoinLogId = int64(item.ID)
+			inbox.Bill = float64(avergeBill)
+			inbox.ObjectId = item.ActivityId
+			inbox.ActivityName = activity.Name
+			inbox.Content = ""
 			consume += avergeBill
-			user[index] = mp
+			user[index] = &inbox
 		}
 
 		num := len(joinLogSli) //中奖人数
@@ -144,7 +158,7 @@ func HandlePhoneBill(activity model.Activity,)  {
 				//抽取一个中奖用户
 				_,ok := user[key]
 				if ok {
-					user[key]["bill"] = user[key]["bill"]+1
+					user[key].Bill += 1
 					leftAmount --
 					consume += 1
 				}
@@ -152,11 +166,13 @@ func HandlePhoneBill(activity model.Activity,)  {
 		}
 
 		for _,v := range user {
+			v.Content = fmt.Sprintf("恭喜您，在%v中获得%v元话费，稍后将会充值到您的账户中，请留意手机短信消息",activity.Name,v.Bill)
 			mpStr,_ := json.Marshal(&v)
 			//推送到队列
-			intCmd := redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_PHONE_BILL_QUEUE,string(mpStr))
+			intCmd := redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
+			intCmd = redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_PHONE_BILL_QUEUE,string(mpStr))
 			if intCmd.Err() != nil {
-				util.ErrDetail(enums.ACTIVITY_PUSH_BILL_QUEUE_ERR,fmt.Sprintf("推送到话费发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,v["user_id"]),intCmd.Err().Error())
+				util.ErrDetail(enums.ACTIVITY_PUSH_BILL_QUEUE_ERR,fmt.Sprintf("推送到话费发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,v.UserId),intCmd.Err().Error())
 			}
 		}
 
@@ -174,12 +190,20 @@ func HandlePhoneBill(activity model.Activity,)  {
 
 //处理红包
 func HandleReaPackage(activity model.Activity)  {
+	if float32(activity.JoinNum) < activity.JoinLimitNum {
+		return
+	}
+
 	redis := util.NewRedis()
 	defer redis.Client.Close()
 }
 
 //处理礼品
 func HandleGift(activity model.Activity)  {
+	if float32(activity.JoinNum) < activity.JoinLimitNum {
+		return
+	}
+
 	db,connectErr := model.Connect()
 	if connectErr != nil {
 		util.ErrDetail(connectErr.Code,"完结活动时数据库连接错误",connectErr.Err)
