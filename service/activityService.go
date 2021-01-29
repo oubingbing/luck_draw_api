@@ -294,6 +294,7 @@ func GetJoinLogMember(db *gorm.DB,activityId interface{}) (model.JoinLogMemberPa
 		if err == gorm.ErrRecordNotFound {
 			return nil,nil
 		}else{
+			util.ErrDetail(enums.ACTIVITY_JOIN_LOG_QUERY_MEMBER_ERR,"查询活动参与人员出错",err.Error())
 			return nil,&enums.ErrorInfo{enums.SystemErr,enums.ACTIVITY_JOIN_LOG_QUERY_MEMBER_ERR}
 		}
 	}

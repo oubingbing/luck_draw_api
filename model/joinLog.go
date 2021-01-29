@@ -96,7 +96,7 @@ func (joinLog *JoinLog) FindMember(db *gorm.DB,activityId interface{}) (JoinLogM
 		Joins("left join wechat_user on wechat_user.id = activity_join_log.user_id").
 		Select("activity_join_log.id,activity_id,user_id,wechat_user.nick_name,wechat_user.avatar_url").
 		Where("activity_id = ?",activityId).
-		Where("deleted_at is null").
+		Where("activity_join_log.deleted_at is null").
 		Where("activity_join_log.status != ?",JOIN_LOG_STATUS_FAIL).
 		Find(&page).Error
 
