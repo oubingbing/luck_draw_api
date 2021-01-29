@@ -71,6 +71,18 @@ func UserUpdate(db *gorm.DB,id uint,nickname string,avatar string) *enums.ErrorI
 	return nil
 }
 
+func UpdatePhone(db *gorm.DB,id interface{},phone string) *enums.ErrorInfo {
+	user := &model.User{}
+	data := make(map[string]interface{})
+	data["phone"] = phone
+	err := user.Update(db,id,data)
+	if err != nil {
+		return &enums.ErrorInfo{enums.UserUpdatePhoneErr,enums.AUTH_USER_UPDATE_PHONE_ERR}
+	}
+
+	return nil
+}
+
 /**
  * 通过微信服务器获取用户信息
  */

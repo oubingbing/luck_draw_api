@@ -191,3 +191,15 @@ func GetActivityMember(ctx *gin.Context)  {
 	util.ResponseJson(ctx,enums.SUCCESS,"ok",page)
 	return
 }
+
+func ActivityType(ctx *gin.Context)  {
+	data := []map[string]interface{}{
+		map[string]interface{}{"type":0,"txt":"全部"},
+		map[string]interface{}{"type":4,"txt":"虚拟奖品"},
+		map[string]interface{}{"type":1,"txt":"红包"},
+		map[string]interface{}{"type":2,"txt":"礼品"},
+		map[string]interface{}{"type":3,"txt":"话费"},
+	}
+	util.ResponseJson(ctx,enums.SUCCESS,"ok",data)
+	return
+}

@@ -6,6 +6,7 @@ import (
 	"luck_draw/model"
 	"luck_draw/service"
 	"luck_draw/util"
+	"regexp"
 )
 
 func CreateAddress(ctx *gin.Context)  {
@@ -15,6 +16,13 @@ func CreateAddress(ctx *gin.Context)  {
 	errInfo := &enums.ErrorInfo{}
 	if errInfo.Err = ctx.ShouldBind(&param); errInfo.Err != nil {
 		util.ResponseJson(ctx,enums.ACTIVITY_PARAM_ERR,errInfo.Err.Error(),nil)
+		return
+	}
+
+	reg := `^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\d{8}$`
+	rgx := regexp.MustCompile(reg)
+	if phoneCheck := rgx.MatchString(param.Phone); !phoneCheck {
+		util.ResponseJson(ctx,enums.ADDRESS_FORMAT_ERR,enums.AddressPhoneErr.Error(),nil)
 		return
 	}
 

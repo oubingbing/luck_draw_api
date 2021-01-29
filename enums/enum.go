@@ -37,6 +37,7 @@ const (
 	AUTH_NOT_LOGIN					= 1012		//未登录
 	Auth_TRANS_UID_ERR				= 1013		//userId类型转化失败
 	AUTH_USER_NOT_FOUND				= 1014		//用户不存在
+	AUTH_USER_UPDATE_PHONE_ERR		= 1015		//用户更新手机号失败
 )
 
 //活动相关 2000 ~ 2999
@@ -101,6 +102,7 @@ const (
 	ADDRESS_PAGE_QUERY_ERR		 	= 5007		//地址分页查询错误
 	ADDRESS_DETAIL_QUERY_ERR		= 5008		//地址详情查询错误
 	ADDRESS_DELETE_DB_ERR			= 5009		//地址删除错误
+	ADDRESS_FORMAT_ERR				= 5010		//手机号格式错误
 )
 
 //消息盒子相关 6000 ~ 6999

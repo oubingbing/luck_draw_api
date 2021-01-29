@@ -92,12 +92,14 @@ func GetUserInfo(ctx *gin.Context)  {
 	data["nickname"] 	= user.NickName
 	data["gender"] 		= user.Gender
 	data["avatar"] 		= user.AvatarUrl
+	data["phone"] 		= user.Phone
 
 	util.ResponseJson(ctx,enums.SUCCESS,"",data)
 	return
 }
 
 func GetUserPhone(ctx *gin.Context)  {
+	uid,_ := ctx.Get("user_id")
 	var loginData enums.WxMiniLoginData
 	if err := ctx.ShouldBind(&loginData); err != nil {
 		util.ResponseJson(ctx,enums.AUTH_PARAMS_ERROR,err.Error(),nil)
@@ -110,12 +112,28 @@ func GetUserPhone(ctx *gin.Context)  {
 		return
 	}
 
-	fmt.Println(string(userInfo))
+	util.Info(fmt.Sprintf("用户:%v,手机号信息：%v",uid,string(userInfo)))
 
 	phoneData := &enums.UserPhone{}
-	json.Unmarshal(userInfo,phoneData)
-	fmt.Println(phoneData)
-	util.ResponseJson(ctx,enums.SUCCESS,"",string(userInfo))
-	return
+	parseErr := json.Unmarshal(userInfo,phoneData)
+	if parseErr != nil {
+		util.ResponseJson(ctx,enums.SYSTEM_ERR,"手机号信息解析失败",nil)
+		return
+	}
 
+	db,connectErr := model.Connect()
+	defer db.Close()
+	if connectErr != nil {
+		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
+		return
+	}
+
+	err := service.UpdatePhone(db,uid,phoneData.PhoneNumber)
+	if err != nil {
+		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
+		return
+	}
+
+	util.ResponseJson(ctx,enums.SUCCESS,"",phoneData.PhoneNumber)
+	return
 }

@@ -37,7 +37,7 @@ func (user *User)FindByOpenId(db *gorm.DB,openId string) error {
 	return err
 }
 
-func (user *User)Update(db *gorm.DB,id uint,data map[string]interface{}) error {
+func (user *User)Update(db *gorm.DB,id interface{},data map[string]interface{}) error {
 	err := db.Table(user.TableName()).Where("deleted_at is null").Where("id = ?",id).Updates(data).Error
 	return err
 }

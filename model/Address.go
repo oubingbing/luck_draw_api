@@ -6,6 +6,11 @@ import (
 	"luck_draw/enums"
 )
 
+const (
+	ADDRESS_USE_TYPE_DEFAUL 		= 1 //默认收货地址
+	ADDRESS_USE_TYPE_nNOT_DEFAUL 	= 2 //非默认收货地址
+)
+
 type Address struct {
 	gorm.Model
 	UserId  		uint		`gorm:"column:user_id"`
@@ -106,5 +111,12 @@ func (address *Address)Delete(db *gorm.DB,userId interface{},id interface{}) err
 		Where("id = ?",id).
 		Delete(address).Error
 
+	return err
+}
+
+func (address *Address)UpdateUseType(db *gorm.DB,userId interface{}) error {
+	data := make(map[string]interface{})
+	data["use_type"] = ADDRESS_USE_TYPE_nNOT_DEFAUL
+	err := db.Table(address.TableName()).Where("deleted_at is null").Where("user_id = ?",userId).Updates(data).Error
 	return err
 }

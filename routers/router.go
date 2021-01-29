@@ -26,6 +26,9 @@ func InitRouter() *gin.Engine {
 
 		//首页广告
 		notAuth.GET("/ad/home",controller.AdHome)
+
+		//活动类型
+		notAuth.GET("/activity/category",controller.ActivityType)
 	}
 
 	auth := router.Group("/api")

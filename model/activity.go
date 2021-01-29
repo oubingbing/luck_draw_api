@@ -87,10 +87,16 @@ func (activity *Activity)Store(db *gorm.DB) (int64,error) {
 
 func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorInfo) {
 	var activities AcPage
-	err :=  Page(db,activity.TableName(),page).
+	newDB :=  Page(db,activity.TableName(),page).
 			Where("deleted_at is null").
-			Where("status in (?)",[]int8{ACTIVITY_STATSUS_RUNNING,ACTIVITY_STATSUS_FINISH}).
-			Select("id,name,gift_id,type,from_type,join_num,attachments,join_limit_num,status").
+			Where("status in (?)",[]int8{ACTIVITY_STATSUS_RUNNING,ACTIVITY_STATSUS_FINISH})
+
+	filterDb := newDB
+	if int(page.Type) != int(0) {
+		filterDb = newDB.Where("type = ?",page.Type)
+	}
+
+	err := filterDb.Select("id,name,gift_id,type,from_type,join_num,attachments,join_limit_num,status").
 			Order("id desc").
 			Find(&activities).Error
 	if err != nil {
