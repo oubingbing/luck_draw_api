@@ -63,7 +63,7 @@ func (joinLog *JoinLog)Update(db *gorm.DB,id uint,data map[string]interface{}) e
 
 func (joinLog *JoinLog)LockById(db *gorm.DB,id interface{}) error {
 	err := db.Table(joinLog.TableName()).
-		Set("gorm:query_option", "FOR UPDATE").
+		//Set("gorm:query_option", "FOR UPDATE").
 		Where("id = ?",id).
 		Where("deleted_at is null").
 		First(joinLog).Error

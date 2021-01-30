@@ -6,6 +6,7 @@ import "errors"
 var (
 	DecodeErr						= errors.New("数据解析失败")
 	SystemErr						= errors.New("系统异常")
+	NetErr							= errors.New("网络繁忙")
 )
 
 //登录授权

@@ -123,7 +123,7 @@ func (activity *Activity) Detail(db *gorm.DB,id string) (*enums.ActivityDetailFo
 func (activity *Activity)LockById(db *gorm.DB,id interface{}) error {
 	err := db.Table(activity.TableName()).
 		Where("deleted_at is null").
-		Set("gorm:query_option", "FOR UPDATE").
+		//Set("gorm:query_option", "FOR UPDATE").
 		Where("id = ?",id).
 		First(activity).Error
 

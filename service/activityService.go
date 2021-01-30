@@ -189,7 +189,7 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 	if err != nil {
 		tx.Rollback()
 		util.ErrDetail(enums.ACTIVITY_DETAIL_QUERY_ERR,"活动详情查询错误-"+err.Error(),id)
-		return 0,&enums.ErrorInfo{err,enums.ACTIVITY_DETAIL_QUERY_ERR}
+		return 0,&enums.ErrorInfo{enums.NetErr,enums.ACTIVITY_DETAIL_QUERY_ERR}
 	}
 
 	if err == gorm.ErrRecordNotFound {
@@ -210,7 +210,6 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 			return 0,fakerUserErr
 		}
 	}
-
 
 	//写入参与日志
 	joinLog,joinLogErr := SaveJoinLog(tx,int64(activity.ID),userId,model.JOIN_LOG_STATUS_QUEUE,model.FAKER_N)
@@ -265,8 +264,6 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 
 			rand.Seed(time.Now().UnixNano()+userId+(int64(i)))
 			fakerUserId := rand.Intn(int(len(userIds)))
-
-			fmt.Printf("假用户id：%v\n",userIds[fakerUserId].ID)
 
 			//加入Faker
 			fmt.Printf("假用户id：%v\n",int64(fUser.ID))
