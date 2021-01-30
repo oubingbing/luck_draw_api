@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"luck_draw/enums"
 	"luck_draw/model"
+	"luck_draw/service"
 	"luck_draw/util"
 	"math/rand"
 	"time"
@@ -172,6 +173,8 @@ func HandlePhoneBill(activity model.Activity)  {
 
 	}
 
+	//还有一种是真用户只有1元，假用户可以中更多
+
 	//更新活动实际消耗奖品数量
 	updateConsueme := make(map[string]interface{})
 	updateConsueme["consume"] = consume
@@ -217,6 +220,15 @@ func HandleGift(activity model.Activity)  {
 		return
 	}
 
+	//查找gift
+	gift,giftErr := service.FirstGiftById(db,activity.GiftId)
+	if giftErr != nil {
+		util.ErrDetail(giftErr.Code,"取出需要完结的活动奖品时发生错误",giftErr.Err.Error())
+		return
+	}
+
+	fmt.Printf("礼品：%v\n",gift)
+
 	//将活动变更为已完成
 	ac := &model.Activity{}
 	updateActivity := make(map[string]interface{})
@@ -247,39 +259,48 @@ func HandleGift(activity model.Activity)  {
 		}*/
 	}else{
 		//拼手气
-		user := make(map[int]map[string]int64)
+		user := make(map[int]*model.InboxMessage)
 		if activity.Really ==  model.ACTIVITY_REALLY_Y {
 			//真送
 			for index,item := range joinLogSli {
 				if item.Faker == model.FAKER_N {
-					mp := make(map[string]int64)
-					mp["user_id"] = item.UserId
-					mp["join_log_id"] = int64(item.ID)
-					mp["bill"] = 1
-					user[index] = mp
+					inbox := model.InboxMessage{}
+					inbox.UserId = item.UserId
+					inbox.JoinLogId = int64(item.ID)
+					inbox.Bill = 1
+					inbox.ObjectId = item.ActivityId
+					inbox.ActivityName = activity.Name
+					inbox.Content = ""
+					user[index] = &inbox
 				}
 			}
 		}else{
 			//假送
 			for index,item := range joinLogSli {
 				if item.Faker == model.FAKER_Y {
-					mp := make(map[string]int64)
-					mp["user_id"] = item.UserId
-					mp["join_log_id"] = int64(item.ID)
-					mp["bill"] = 1
-					user[index] = mp
+					inbox := model.InboxMessage{}
+					inbox.UserId = item.UserId
+					inbox.JoinLogId = int64(item.ID)
+					inbox.Bill = 1
+					inbox.ObjectId = item.ActivityId
+					inbox.ActivityName = activity.Name
+					inbox.Content = ""
+					user[index] = &inbox
 				}
 			}
 		}
 
 		num := len(user) //中奖人数
 		leftAmount := activity.ReceiveLimit
+		i := 1
 		if leftAmount >= 1 {
 			//循环扣减,直到奖金池为0
 			for  {
 				if leftAmount <= 0 {
 					break
 				}
+				rand.Seed(time.Now().UnixNano()+int64(i))
+				i++
 				key := rand.Intn(num)
 				//抽取一个中奖用户
 				v,ok := user[key]
@@ -287,11 +308,15 @@ func HandleGift(activity model.Activity)  {
 					leftAmount --
 					consume += 1
 
-					mpStr,_ := json.Marshal(&v)
+					user[key].Content = fmt.Sprintf("恭喜您在活动 %v 中获得 %v X1，请确保您已填写了收货地址，我们会往您的默认收货地址寄送奖品，谢谢。",activity.Name,gift.Name)
+					util.Info(fmt.Sprintf("中奖用户：%v,中奖活动：%v，中奖内容：%v",user[key].UserId,user[key].ObjectId,user[key].Content))
+
+					mpStr,_ := json.Marshal(user[key])
+					intCmd := redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
 					//推送到队列
-					intCmd := redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_GIFT_QUEUE,string(mpStr))
+					intCmd = redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_GIFT_QUEUE,string(mpStr))
 					if intCmd.Err() != nil {
-						util.ErrDetail(enums.ACTIVITY_PUSH_GIFT_QUEUE_ERR,fmt.Sprintf("推送到物品发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,v["user_id"]),intCmd.Err().Error())
+						util.ErrDetail(enums.ACTIVITY_PUSH_GIFT_QUEUE_ERR,fmt.Sprintf("推送到物品发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,v.UserId),intCmd.Err().Error())
 					}
 					delete(user,key)
 				}

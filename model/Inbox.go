@@ -37,7 +37,7 @@ func (inbox *Inbox)Store(db *gorm.DB) (int64,error) {
 }
 
 func (inbox *Inbox)Update(db *gorm.DB,id interface{},data map[string]interface{}) error {
-	err := db.Table(inbox.TableName()).Where("deleted_at is null").Where("id = ?",id).Updates(data).Error
+	err := db.Table(inbox.TableName()).Where("id = ?",id).Updates(data).Error
 	return err
 }
 

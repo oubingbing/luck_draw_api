@@ -52,6 +52,13 @@ func UpdateAddress(ctx *gin.Context)  {
 		return
 	}
 
+	reg := `^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\d{8}$`
+	rgx := regexp.MustCompile(reg)
+	if phoneCheck := rgx.MatchString(param.Phone); !phoneCheck {
+		util.ResponseJson(ctx,enums.ADDRESS_FORMAT_ERR,enums.AddressPhoneErr.Error(),nil)
+		return
+	}
+
 	db,connectErr := model.Connect()
 	defer db.Close()
 	if connectErr != nil {

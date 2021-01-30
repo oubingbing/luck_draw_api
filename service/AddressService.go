@@ -33,6 +33,7 @@ func StoreAddress(db *gorm.DB,userId interface{},param *enums.AddressParam) (*mo
 	if int(param.UseType) == model.ADDRESS_USE_TYPE_DEFAUL {
 		//更新之前的为非默认收货地址
 		address.UpdateUseType(db,userId)
+		fmt.Println("更新其他的地址为非默认")
 	}
 
 	affect,err := address.Store(db)
@@ -41,7 +42,7 @@ func StoreAddress(db *gorm.DB,userId interface{},param *enums.AddressParam) (*mo
 		util.ErrDetail(enums.ADDRESS_STORE_ERR,fmt.Sprintf("保存地址失败：%v",err.Error()),string(paramStr))
 		return nil,&enums.ErrorInfo{enums.AddressStoreErr,enums.ADDRESS_STORE_ERR}
 	}
-	fmt.Println(affect)
+
 	if affect <= 0 {
 		paramStr,_ := json.Marshal(param)
 		util.ErrDetail(enums.ADDRESS_STORE_AFFECT_ERR,fmt.Sprintf("保存地址失败：%v",affect),string(paramStr))
@@ -69,7 +70,11 @@ func UpdateAddress(db *gorm.DB,userId interface{},param *enums.AddressUpdatePara
 
 	if int(param.UseType) == model.ADDRESS_USE_TYPE_DEFAUL {
 		//更新之前的为非默认收货地址
-		address.UpdateUseType(db,userId)
+		err := address.UpdateUseType(db,userId)
+		if err != nil {
+			fmt.Println("跟新用户地址信息失败")
+			return nil,&enums.ErrorInfo{enums.SystemErr,enums.ADDRESS_UPDATE_ERR}
+		}
 	}
 
 	address.Receiver 		= param.Receiver

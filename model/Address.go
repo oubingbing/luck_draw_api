@@ -117,6 +117,6 @@ func (address *Address)Delete(db *gorm.DB,userId interface{},id interface{}) err
 func (address *Address)UpdateUseType(db *gorm.DB,userId interface{}) error {
 	data := make(map[string]interface{})
 	data["use_type"] = ADDRESS_USE_TYPE_nNOT_DEFAUL
-	err := db.Table(address.TableName()).Where("deleted_at is null").Where("user_id = ?",userId).Updates(data).Error
+	err := db.Table(address.TableName()).Where("user_id = ?",userId).Updates(data).Error
 	return err
 }

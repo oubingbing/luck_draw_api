@@ -105,7 +105,7 @@ type AddressParam struct {
 	City 			string		`form:"city" json:"city"`
 	District 		string		`form:"district" json:"district"`
 	DetailAddress 	string		`form:"detail_address" json:"detail_address"`
-	UseType 		int8		`form:"use_type" json:"use_type"` 				//1=默认，2=非默认
+	UseType 		int8		`form:"useType" json:"useType"` 				//1=默认，2=非默认
 }
 
 type AddressUpdateParam struct {
