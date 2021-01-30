@@ -7,6 +7,8 @@ const (
 	USER_FRMO_OFFICIAL		= 2		//公众号
 )
 
+const FAKER_USER_LIST		= "luck_draw_faker_user_list"
+
 type User struct {
 	gorm.Model
 	NickName 		string		`gorm:"column:nick_name"`		//昵称
@@ -21,6 +23,10 @@ type User struct {
 	FromType		int8		`gorm:"column:from_type"`		//用户来源,1=小程序，2=h5公众号
 	Phone			string		`gorm:"column:phone"`
 	Faker			int8		`gorm:"column:faker"`
+}
+
+type UserIDs struct {
+	ID        uint
 }
 
 func (User) TableName() string  {
@@ -45,4 +51,14 @@ func (user *User)Update(db *gorm.DB,id interface{},data map[string]interface{}) 
 func (user *User)FindById(db *gorm.DB,id int64) error {
 	err := db.Table(user.TableName()).Where("deleted_at is null").Where("id = ?",id).First(user).Error
 	return err
+}
+
+func (user *User) FakerUsers(db *gorm.DB) ([]UserIDs,error) {
+	var data []UserIDs
+	err := db.Table(user.TableName()).
+		Select("id").
+		Where("deleted_at is null").
+		Where("Faker = ?",FAKER_Y).
+		Find(&data).Error
+	return data,err
 }

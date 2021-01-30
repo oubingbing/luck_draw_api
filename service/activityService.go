@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,6 +9,8 @@ import (
 	"luck_draw/enums"
 	"luck_draw/model"
 	"luck_draw/util"
+	"math/rand"
+	"sort"
 	"time"
 )
 
@@ -70,12 +73,15 @@ func ActivityPage(db *gorm.DB,page *model.PageParam) (model.AcPage,*enums.ErrorI
 
 	config,_ := util.GetConfig()
 	domain := config["COS_DOMAIN"]
-	for index,_ := range activities {
+	for index,item := range activities {
 		activities[index].AttachmentsSli,err = AppendDomain(domain,activities[index].Attachments)
 		if err != nil {
 			return nil,err
 		}
 		activities[index].Attachments = ""
+		if float32(item.JoinNum) > item.JoinLimitNum {
+			activities[index].JoinNum = int32(item.JoinLimitNum)
+		}
 	}
 
 	return activities,nil
@@ -164,6 +170,10 @@ func ActivityDetail(db *gorm.DB,id string,userId float64) (*enums.ActivityDetail
 		}
 	}
 
+	if detail.JoinNum > int32(detail.JoinLimitNum) {
+		detail.JoinNum = int32(detail.JoinLimitNum)
+	}
+
 	return detail,nil
 }
 
@@ -193,8 +203,17 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 		return 0,&enums.ErrorInfo{joinLimit,enums.ACTIVITY_JOIN_LIMIT}
 	}
 
+	//Faker join
+	if int(activity.Really) == model.ACTIVITY_REALLY_N {
+		fakerUserErr := JoinFakerUser(tx,activity,userId)
+		if fakerUserErr != nil {
+			return 0,fakerUserErr
+		}
+	}
+
+
 	//写入参与日志
-	joinLog,joinLogErr := SaveJoinLog(tx,int64(activity.ID),userId)
+	joinLog,joinLogErr := SaveJoinLog(tx,int64(activity.ID),userId,model.JOIN_LOG_STATUS_QUEUE,model.FAKER_N)
 	if joinLogErr != nil {
 		tx.Rollback()
 		return 0,joinLogErr
@@ -217,10 +236,66 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 	return joinLog.ID,nil
 }
 
+func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.ErrorInfo {
+	ctx := context.Background()
+	redis := util.NewRedis()
+	defer redis.Client.Close()
+	cacheKey := fmt.Sprintf("%v:%v",model.FAKER_USER_KEY,activity.ID)
+	intCmd := redis.Client.Get(ctx,cacheKey)
+	if intCmd.Err() != nil {
+		return &enums.ErrorInfo{enums.SystemErr,enums.SYSTEM_ERR}
+	}
+
+	var fakerUser []int
+	parserErr := json.Unmarshal([]byte(intCmd.Val()),&fakerUser)
+	if parserErr != nil {
+		//解析数据失败
+		return &enums.ErrorInfo{enums.SystemErr,enums.SYSTEM_ERR}
+	}
+
+	sort.Ints(fakerUser)
+	activityNum := activity.JoinNum
+	for i := 0; i <= len(fakerUser) - 1 ; i++ {
+		if int(activityNum) == fakerUser[i] {
+			fUser := &model.User{}
+			userIds,err := GetFakerUser(tx)
+			if err != nil {
+				return &enums.ErrorInfo{enums.SystemErr,enums.SYSTEM_ERR}
+			}
+
+			rand.Seed(time.Now().UnixNano()+userId+(int64(i)))
+			fakerUserId := rand.Intn(int(len(userIds)))
+
+			fmt.Printf("假用户id：%v\n",userIds[fakerUserId].ID)
+
+			//加入Faker
+			fmt.Printf("假用户id：%v\n",int64(fUser.ID))
+			_,joinLogErr := SaveJoinLog(tx,int64(activity.ID),int64(userIds[fakerUserId].ID),model.JOIN_LOG_STATUS_SUCCESS,model.FAKER_Y)
+			if joinLogErr != nil {
+				tx.Rollback()
+				return joinLogErr
+			}
+
+			activityData := make(map[string]interface{})
+			activityData["join_num"] = activity.JoinNum+1
+			err = activity.Update(tx,activity.ID,activityData)
+			if err != nil {
+				tx.Rollback()
+				util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR,enums.ActivityUpdateJoinNumFailErr.Error(),activity.ID)
+				return &enums.ErrorInfo{enums.ActivityUpdateJoinNumFailErr,enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR}
+			}
+		}
+
+		//判断参加用户是佛已经满人
+	}
+
+	return nil
+}
+
 /**
  * 写入参与日志
  */
-func SaveJoinLog(db *gorm.DB,activityId int64,userId int64) (*model.JoinLog,*enums.ErrorInfo) {
+func SaveJoinLog(db *gorm.DB,activityId int64,userId int64,status int8,faker int8) (*model.JoinLog,*enums.ErrorInfo) {
 	joinLog := &model.JoinLog{}
 
 	err := joinLog.FindByUserActivity(db,activityId,userId)
@@ -236,7 +311,8 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64) (*model.JoinLog,*enu
 	if gorm.IsRecordNotFoundError(err) {
 		joinLog.ActivityId = activityId
 		joinLog.UserId = userId
-		joinLog.Status = model.JOIN_LOG_STATUS_QUEUE
+		joinLog.Status = status
+		joinLog.Faker = faker
 		joinLog.Remark = ""
 
 		effect,err := joinLog.Store(db)

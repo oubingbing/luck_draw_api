@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"luck_draw/enums"
 	"luck_draw/model"
-	"luck_draw/service"
 	"luck_draw/util"
 	"math/rand"
 	"time"
@@ -72,13 +71,6 @@ func HandlePhoneBill(activity model.Activity)  {
 		db.Close()
 	}()
 
-	//查找gift
-	gift,giftErr := service.FirstGiftById(db,activity.GiftId)
-	if giftErr != nil {
-		util.ErrDetail(giftErr.Code,"取出需要完结的活动奖品时发生错误",giftErr.Err.Error())
-		return
-	}
-
 	joinLog := &model.JoinLog{}
 	joinLogSli,err := joinLog.GetJoinLogByActivityId(db,activity.ID)
 	if err != nil {
@@ -100,7 +92,7 @@ func HandlePhoneBill(activity model.Activity)  {
 	var consume int64 = 0
 	if activity.DrawType == model.ACTIVITY_DRAW_TYPE_AVERAGE {
 		//平均，人人有份
-		averge := gift.Num / float32(activity.JoinNum)
+		averge := activity.ReceiveLimit / float32(activity.JoinNum)
 		//话费的区间
 		bill := []int{1,2,5,10}
 		avergeBill := 1 //需要送的话费
@@ -147,7 +139,7 @@ func HandlePhoneBill(activity model.Activity)  {
 		}
 
 		num := len(joinLogSli) //中奖人数
-		leftAmount := gift.Num - float32(num)
+		leftAmount := activity.ReceiveLimit - float32(num)
 		if leftAmount >= 1 {
 			//循环扣减,直到奖金池为0
 			seed := 1
@@ -218,13 +210,6 @@ func HandleGift(activity model.Activity)  {
 		db.Close()
 	}()
 
-	//查找gift
-	gift,giftErr := service.FirstGiftById(db,activity.GiftId)
-	if giftErr != nil {
-		util.ErrDetail(giftErr.Code,"取出需要完结的活动奖品时发生错误",giftErr.Err.Error())
-		return
-	}
-
 	joinLog := &model.JoinLog{}
 	joinLogSli,err := joinLog.GetJoinLogByActivityId(db,activity.ID)
 	if err != nil {
@@ -288,7 +273,7 @@ func HandleGift(activity model.Activity)  {
 		}
 
 		num := len(user) //中奖人数
-		leftAmount := gift.Num
+		leftAmount := activity.ReceiveLimit
 		if leftAmount >= 1 {
 			//循环扣减,直到奖金池为0
 			for  {

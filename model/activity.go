@@ -48,6 +48,9 @@ const (
 	ACTIVITY_REALLY_Y 			= 1
 )
 
+//假用户redis key
+const FAKER_USER_KEY = "luck_draw_faker_activity"
+
 type Activity struct {
 	gorm.Model
 	Name 			string 		`gorm:"column:name"`
@@ -121,6 +124,15 @@ func (activity *Activity)LockById(db *gorm.DB,id interface{}) error {
 	err := db.Table(activity.TableName()).
 		Where("deleted_at is null").
 		Set("gorm:query_option", "FOR UPDATE").
+		Where("id = ?",id).
+		First(activity).Error
+
+	return err
+}
+
+func (activity *Activity)FirstById(db *gorm.DB,id interface{}) error {
+	err := db.Table(activity.TableName()).
+		Where("deleted_at is null").
 		Where("id = ?",id).
 		First(activity).Error
 

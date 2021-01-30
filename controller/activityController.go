@@ -135,9 +135,14 @@ func Join(ctx *gin.Context)  {
 		return
 	}
 
-	fmt.Printf("id是什么：%v\n",logId)
-	msg,finish := queue.AttemptJoin(db,logId)
-	fmt.Printf("是否完成：%v\n",finish)
+	db2,connectErr2 := model.Connect()
+	if connectErr2 != nil {
+		util.ResponseJson(ctx,connectErr2.Code,connectErr2.Err.Error(),nil)
+		return
+	}
+
+	msg,finish := queue.AttemptJoin(db2,logId)
+	db2.Close()
 	if finish != 0 {
 		util.ResponseJson(ctx,enums.FAIL,msg,nil)
 		return

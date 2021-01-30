@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/jinzhu/gorm"
@@ -163,6 +164,33 @@ func FindUserById(db *gorm.DB,id int64) (*model.User,*enums.ErrorInfo) {
 	}
 
 	return user,nil
+}
+
+func GetFakerUser(db *gorm.DB) ([]model.UserIDs,error) {
+	var userList []model.UserIDs
+	var err error
+
+	ctx := context.Background()
+	redis := util.NewRedis()
+	defer redis.Client.Close()
+	result := redis.Client.Get(ctx,model.FAKER_USER_LIST)
+	if len(result.Val()) > 0 {
+		//解析
+		err = json.Unmarshal([]byte(result.Val()),&userList)
+		return userList,err
+	}else{
+		fUser := &model.User{}
+		userList,err = fUser.FakerUsers(db)
+		if err != nil {
+			return nil,err
+		}
+
+		var userListByte []byte
+		userListByte,err = json.Marshal(&userList)
+		redis.Client.Set(ctx,model.FAKER_USER_LIST,string(userListByte),0)
+	}
+
+	return  userList,nil
 }
 
 

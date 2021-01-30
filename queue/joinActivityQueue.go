@@ -15,16 +15,17 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	finish := 0
 	msg := "参加失败，请重试"
 	var userId int64
+	fmt.Println(userId)
 
-	defer func() {
+	/*defer func() {
 		db.Close()
-		/*notifyErr := service.SocketNotify(string(userId),finish,msg)
+		notifyErr := service.SocketNotify(string(userId),finish,msg)
 		util.Info("已加到通知")
 		if notifyErr != nil {
 			util.Error(notifyErr.Error())
-		}*/
+		}
 		util.Info(fmt.Sprintf("%v,%v,%v",finish,msg,userId))
-	}()
+	}()*/
 
 	tx := db.Begin()
 	joinLog := &model.JoinLog{}
@@ -44,7 +45,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	}
 
 	activity := &model.Activity{}
-	err = activity.LockById(tx,joinLog.ActivityId)
+	err = activity.FirstById(tx,joinLog.ActivityId)
 	if err == gorm.ErrRecordNotFound {
 		tx.Rollback()
 		finish = enums.ACTIVITY_DEAL_QUEUE_A_NOT_FOUND
