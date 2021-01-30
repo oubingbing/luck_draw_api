@@ -24,4 +24,3 @@ func main() {
 		util.Error(fmt.Sprintf("启动服务失败：%v\n",err))
 	}
 }
-

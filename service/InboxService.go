@@ -46,6 +46,7 @@ func GetInboxList(db *gorm.DB,userId interface{},page *model.PageParam) (model.I
 		if err == gorm.ErrRecordNotFound {
 			return nil,nil
 		}else{
+			util.ErrDetail(enums.INBOX_PAGE_QUERY_FAIL,"查询消息盒子失败",enums.InboxPageQueryErr.Error())
 			return nil,&enums.ErrorInfo{enums.InboxPageQueryErr,enums.INBOX_PAGE_QUERY_FAIL}
 		}
 	}

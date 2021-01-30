@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"luck_draw/enums"
 	"time"
@@ -45,11 +46,11 @@ func (inbox *Inbox)Page(db *gorm.DB,userId interface{},page *PageParam) (InboxPa
 	err :=  Page(db,inbox.TableName(),page).
 		Joins("left join activity on activity.id = inbox.object_id").
 		Where("inbox.user_id = ?",userId).
-		Where("deleted_at is null").
+		Where("inbox.deleted_at is null").
 		Select("inbox.id,inbox.user_id,object_type,object_id,inbox.content,read_at,activity.name,activity.attachments").
 		Order("id desc").
 		Find(&inboxList).Error
-
+	fmt.Println(err)
 	return inboxList,err
 }
 

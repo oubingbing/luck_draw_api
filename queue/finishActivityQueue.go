@@ -150,10 +150,12 @@ func HandlePhoneBill(activity model.Activity)  {
 		leftAmount := gift.Num - float32(num)
 		if leftAmount >= 1 {
 			//循环扣减,直到奖金池为0
+			seed := 1
 			for  {
 				if leftAmount <= 0 {
 					break
 				}
+				rand.Seed(time.Now().UnixNano()+int64(seed))
 				key := rand.Intn(num)
 				//抽取一个中奖用户
 				_,ok := user[key]
