@@ -118,7 +118,6 @@ func GetSessionInfo(param *enums.WxMiniLoginData) ([]byte,*enums.ErrorInfo) {
 	}
 
 	userJson,err := util.AesDecrypt(param.EncryptedData,sessionData["session_key"],param.Iv)
-	util.Error(fmt.Sprintf("GetSessionInfo-解析用户json出错:%v\n,json_data:%v",err,string(userJson)))
 	if err != nil{
 		util.Error(fmt.Sprintf("GetSessionInfo-解析用户json出错:%v\n,json_data:%v",err,string(userJson)))
 		return nil,&enums.ErrorInfo{Code:enums.AUTH_PARSE_JSON_ERR,Err:enums.LoginParseUserJsonErr}

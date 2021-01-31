@@ -269,6 +269,16 @@ func HandleGift(activity model.Activity)  {
 
 	var winId []int64
 
+	//更新未中奖的
+	joinLogNot := &model.JoinLog{}
+	update := make(map[string]interface{})
+	update["remark"] = "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
+	update["status"] = model.JOIN_LOG_STATUS_LOSE
+	updateErr := joinLogNot.UpdateNotWin(db,activity.ID,winId,update)
+	if updateErr != nil {
+		util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"更新用户未中奖join log数据库异常",updateErr.Error())
+	}
+
 	var ctx = context.Background()
 	var consume int64 = 0
 	if activity.DrawType == model.ACTIVITY_DRAW_TYPE_AVERAGE {
@@ -300,7 +310,7 @@ func HandleGift(activity model.Activity)  {
 					inbox.Bill = 1
 					inbox.ObjectId = item.ActivityId
 					inbox.ActivityName = activity.Name
-					inbox.Content = ""
+					inbox.Content = "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
 					user[index] = &inbox
 				}
 			}
@@ -314,7 +324,7 @@ func HandleGift(activity model.Activity)  {
 					inbox.Bill = 1
 					inbox.ObjectId = item.ActivityId
 					inbox.ActivityName = activity.Name
-					inbox.Content = ""
+					inbox.Content = "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
 					user[index] = &inbox
 				}
 			}
@@ -352,6 +362,7 @@ func HandleGift(activity model.Activity)  {
 
 					winId = append(winId,user[key].JoinLogId)
 
+					//通知中奖的
 					mpStr,_ := json.Marshal(user[key])
 					intCmd := redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
 					//推送到队列
@@ -363,16 +374,12 @@ func HandleGift(activity model.Activity)  {
 				}
 			}
 		}
-	}
 
-	//更新未中奖的
-	joinLogNot := &model.JoinLog{}
-	update := make(map[string]interface{})
-	update["remark"] = "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
-	update["status"] = model.JOIN_LOG_STATUS_LOSE
-	updateErr := joinLogNot.UpdateNotWin(db,winId,update)
-	if updateErr != nil {
-		util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户未中奖join log数据库异常",updateErr.Error())
+		//通知未中奖的
+		for i,_ := range user {
+			mpStr,_ := json.Marshal(user[i])
+			redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
+		}
 	}
 
 	//更新活动实际消耗奖品数量

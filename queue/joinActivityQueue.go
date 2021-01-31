@@ -55,6 +55,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	}
 
 	//Faker join
+	activityNum := activity.JoinNum + 1
 	if int(activity.Really) == model.ACTIVITY_REALLY_N {
 		fakerUserErr := service.JoinFakerUser(tx,activity,userId)
 		if fakerUserErr != nil {
@@ -62,6 +63,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 			finish = fakerUserErr.Code
 			return msg,finish
 		}
+		activityNum += 1
 	}
 
 	if float32(activity.JoinNum) >= activity.JoinLimitNum {
@@ -91,7 +93,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	}
 
 	activityData := make(map[string]interface{})
-	activityData["join_num"] = activity.JoinNum+1
+	activityData["join_num"] = activityNum
 	err = activity.Update(tx,activity.ID,activityData)
 	if err != nil {
 		tx.Rollback()

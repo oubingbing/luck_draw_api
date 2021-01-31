@@ -64,8 +64,14 @@ func (joinLog *JoinLog)Update(db *gorm.DB,id uint,data map[string]interface{}) e
 	return err
 }
 
-func (joinLog *JoinLog)UpdateNotWin(db *gorm.DB,ids []int64,data map[string]interface{}) error {
-	err := db.Table(joinLog.TableName()).Not("id", data).Updates(data).Error
+func (joinLog *JoinLog)UpdateNotWin(db *gorm.DB,activityId interface{},ids []int64,data map[string]interface{}) error {
+	var err error
+	newDb := db.Table(joinLog.TableName()).Where("activity_id = ?",activityId)
+	if len(ids) > 0 {
+		err = newDb.Not("id", ids).Updates(data).Error
+	}else{
+		err = newDb.Updates(data).Error
+	}
 	return err
 }
 
