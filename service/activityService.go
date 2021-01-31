@@ -155,7 +155,6 @@ func ActivityDetail(db *gorm.DB,id string,userId float64) (*enums.ActivityDetail
 	detail.Gift.Attachments = ""
 
 	//用户如果是登录状态再查询抽奖记录
-	fmt.Printf("用户id：%v\n",int64(userId))
 	if int64(userId) > 0 {
 		joinLog := &model.JoinLog{}
 		err = joinLog.FindByUserActivity(db,int64(detail.ID),int64(userId))
@@ -203,14 +202,6 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 		return 0,&enums.ErrorInfo{joinLimit,enums.ACTIVITY_JOIN_LIMIT}
 	}
 
-	//Faker join
-	if int(activity.Really) == model.ACTIVITY_REALLY_N {
-		fakerUserErr := JoinFakerUser(tx,activity,userId)
-		if fakerUserErr != nil {
-			return 0,fakerUserErr
-		}
-	}
-
 	//写入参与日志
 	joinLog,joinLogErr := SaveJoinLog(tx,int64(activity.ID),userId,model.JOIN_LOG_STATUS_QUEUE,model.FAKER_N)
 	if joinLogErr != nil {
@@ -219,8 +210,9 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 	}
 
 	//加入队列
-	/*var ctx = context.Background()
+	var ctx = context.Background()
 	redis := util.NewRedis()
+	fmt.Println("走 ")
 	intCmd := redis.Client.LPush(ctx,enums.ACTIVITY_QUEUE,joinLog.ID)
 	if intCmd.Err() != nil {
 		util.ErrDetail(
@@ -228,7 +220,7 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 			enums.ActivityPushQueueErr.Error(),
 			fmt.Sprintf("activity_id:%v，user_id:%v",activity.ID,userId))
 		return 0,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:enums.ActivityPushQueueErr}
-	}*/
+	}
 
 	tx.Commit()
 
@@ -242,12 +234,14 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 	cacheKey := fmt.Sprintf("%v:%v",model.FAKER_USER_KEY,activity.ID)
 	intCmd := redis.Client.Get(ctx,cacheKey)
 	if intCmd.Err() != nil {
-		return &enums.ErrorInfo{enums.SystemErr,enums.SYSTEM_ERR}
+		util.Error(fmt.Sprintf("这个faker 用户数组不存在 %v:%v",model.FAKER_USER_KEY,activity.ID))
+		return nil
 	}
 
 	var fakerUser []int
 	parserErr := json.Unmarshal([]byte(intCmd.Val()),&fakerUser)
 	if parserErr != nil {
+		fmt.Println(intCmd.Err())
 		//解析数据失败
 		return &enums.ErrorInfo{enums.SystemErr,enums.SYSTEM_ERR}
 	}
@@ -259,6 +253,7 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 			fUser := &model.User{}
 			userIds,err := GetFakerUser(tx)
 			if err != nil {
+				fmt.Println(intCmd.Err())
 				return &enums.ErrorInfo{enums.SystemErr,enums.SYSTEM_ERR}
 			}
 

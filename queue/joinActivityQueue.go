@@ -6,6 +6,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"luck_draw/enums"
 	"luck_draw/model"
+	"luck_draw/service"
 	"luck_draw/util"
 	"sync"
 	"time"
@@ -15,9 +16,8 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	finish := 0
 	msg := "参加失败，请重试"
 	var userId int64
-	fmt.Println(userId)
 
-	/*defer func() {
+	defer func() {
 		db.Close()
 		notifyErr := service.SocketNotify(string(userId),finish,msg)
 		util.Info("已加到通知")
@@ -25,7 +25,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 			util.Error(notifyErr.Error())
 		}
 		util.Info(fmt.Sprintf("%v,%v,%v",finish,msg,userId))
-	}()*/
+	}()
 
 	tx := db.Begin()
 	joinLog := &model.JoinLog{}
@@ -37,6 +37,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 		util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_NOT_FOUND,enums.ActivityQueueNotFound.Error(),id)
 		return msg,finish
 	}
+
 
 	if joinLog.Status != model.JOIN_LOG_STATUS_QUEUE {
 		finish = enums.ACTIVITY_STATUS_NOT_RUNNING
@@ -51,6 +52,16 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 		finish = enums.ACTIVITY_DEAL_QUEUE_A_NOT_FOUND
 		util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_A_NOT_FOUND,enums.ActivityQueueANotFound.Error(),id)
 		return msg,finish
+	}
+
+	//Faker join
+	if int(activity.Really) == model.ACTIVITY_REALLY_N {
+		fakerUserErr := service.JoinFakerUser(tx,activity,userId)
+		if fakerUserErr != nil {
+			msg = fakerUserErr.Err.Error()
+			finish = fakerUserErr.Code
+			return msg,finish
+		}
 	}
 
 	if float32(activity.JoinNum) >= activity.JoinLimitNum {

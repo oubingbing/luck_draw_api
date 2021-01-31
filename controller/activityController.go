@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"luck_draw/enums"
 	"luck_draw/model"
-	"luck_draw/queue"
 	"luck_draw/service"
 	"luck_draw/util"
 )
@@ -135,7 +134,7 @@ func Join(ctx *gin.Context)  {
 		return
 	}
 
-	db2,connectErr2 := model.Connect()
+	/*db2,connectErr2 := model.Connect()
 	if connectErr2 != nil {
 		util.ResponseJson(ctx,connectErr2.Code,connectErr2.Err.Error(),nil)
 		return
@@ -149,7 +148,10 @@ func Join(ctx *gin.Context)  {
 	}else{
 		util.ResponseJson(ctx,enums.SUCCESS,msg,nil)
 		return
-	}
+	}*/
+
+	util.ResponseJson(ctx,enums.SUCCESS,"排队中...",logId)
+	return
 }
 
 func ActivityLog(ctx *gin.Context)  {
