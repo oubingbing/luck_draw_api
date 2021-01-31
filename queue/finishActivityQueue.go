@@ -92,11 +92,18 @@ func HandlePhoneBill(activity model.Activity)  {
 		return
 	}
 
+	//查找gift
+	gift,giftErr := service.FirstGiftById(db,activity.GiftId)
+	if giftErr != nil {
+		util.ErrDetail(giftErr.Code,"取出需要完结的活动奖品时发生错误",giftErr.Err.Error())
+		return
+	}
+
 	var ctx = context.Background()
 	var consume int64 = 0
 	if activity.DrawType == model.ACTIVITY_DRAW_TYPE_AVERAGE {
 		//平均，人人有份
-		averge := activity.ReceiveLimit / float32(activity.JoinNum)
+		averge := gift.Num / float32(activity.JoinNum)
 		//话费的区间
 		bill := []int{1,2,5,10}
 		avergeBill := 1 //需要送的话费
@@ -154,7 +161,7 @@ func HandlePhoneBill(activity model.Activity)  {
 		}
 
 		num := len(joinLogSli) //中奖人数
-		leftAmount := activity.ReceiveLimit - float32(num)
+		leftAmount := gift.Num - float32(num)
 		if leftAmount >= 1 {
 			//循环扣减,直到奖金池为0
 			seed := 1
