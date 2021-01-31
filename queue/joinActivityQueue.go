@@ -129,11 +129,28 @@ func ListenAttemptJoin(wg *sync.WaitGroup)  {
 	})
 }
 
+/**
+ * 监听发送话费队列
+ */
+func ListenPhoneBill(wg *sync.WaitGroup)  {
+	redis := util.NewRedis()
+	t := time.Second * 59
+
+	queue := enums.ACTIVITY_HANDLE_PHONE_BILL_QUEUE
+	redis.OnQueue(wg,queue,t, func(result *redis2.StringSliceCmd, e error) {
+		if len(result.Val()) > 0 {
+			util.Info(fmt.Sprintf("取出需要发送话费的数据：%v",result.Val()[1]));
+			HandleSendPhoneBill(result.Val()[1])
+		}
+	})
+}
+
 func Listen()  {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go ListenInbox(&wg)
 	go ListenAttemptJoin(&wg)
+	go ListenPhoneBill(&wg)
 	wg.Wait()
 	//程序退出，需要通知开发人员
 }

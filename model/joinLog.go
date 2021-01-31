@@ -12,6 +12,8 @@ const (
 	JOIN_LOG_STATUS_FAIL			= 3		//加入失败
 	JOIN_LOG_STATUS_WIN				= 4		//已中奖
 	JOIN_LOG_STATUS_LOSE			= 5		//未中奖
+	JOIN_LOG_SEND_AWARD_SUCCESS		= 6		//奖励发放成功
+	JOIN_LOG_SEND_AWARD_FAIL		= 7		//奖励发放失败
 )
 
 const (
@@ -27,6 +29,7 @@ type JoinLog struct {
 	Remark  		string		`gorm:"column:remark"` 			//备注信息
 	JoinedAt 		*time.Time  `gorm:"column:joined_at"` 		//加入的时间
 	Faker			int8		`gorm:"column:faker"`
+	OrderId			string		`gorm:"column:order_id"`
 }
 
 type JoinLogPage []enums.JoinLogTrans
@@ -58,6 +61,11 @@ func (joinLog *JoinLog) FindById(db *gorm.DB,id string) error {
 
 func (joinLog *JoinLog)Update(db *gorm.DB,id uint,data map[string]interface{}) error {
 	err := db.Table(joinLog.TableName()).Where("deleted_at is null").Where("id = ?",id).Updates(data).Error
+	return err
+}
+
+func (joinLog *JoinLog)UpdateNotWin(db *gorm.DB,ids []int64,data map[string]interface{}) error {
+	err := db.Table(joinLog.TableName()).Not("id", data).Updates(data).Error
 	return err
 }
 

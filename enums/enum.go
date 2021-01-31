@@ -8,6 +8,7 @@ const ACTIVITY_HANDLE_GIFT_QUEUE			= "luck_handle_gift_queue"  	 		//抽礼品�
 const ACTIVITY_QUEUE_TRY					= "luck_activity_queue_try"  			//参加活动重试队列
 const SOCKET_USER_TOKEN  					= "luck_api_socket_token"	 			//用户socket token
 const DATE_FORMAT  							= "2006-01-02 15:04:05"
+const DATE_FORMAT_STRING  					= "20060102150405"
 
 //业务不相关错误
 const (
@@ -73,6 +74,7 @@ const (
 	ACTIVITY_FINDISH_DB_ERR				= 2027		//活动变更为已完成数据库出错
 	ACTIVITY_UPDATE_CONSUME_DB_ERR		= 2028		//活动更新实际消耗奖品数量出错
 	ACTIVITY_PUSH_GIFT_QUEUE_ERR		= 2029		//推送到物品发货队列失败
+	ACTIVITY_UPDATE_JL_ERR				= 2030		//跟新join log错误
 )
 
 //礼品相关 3000 ~ 3999
@@ -112,5 +114,13 @@ const (
 	INBOX_UPDATE_READ_FAIL			= 6001		//更新阅读时间错误
 	INBOX_PAGE_QUERY_FAIL			= 6002		//消息列表分页查询失败
 	INBOX_COUNT_QUERY_FAIL			= 6003		//消息盒子统计未读出错
+)
+
+//礼品发放 7000 ~ 7999
+const (
+	GIFT_PHONE_BILL_SEND_IO_ERR		= 7000		//话费发放接口返回数据读取失败
+	GIFT_PHONE_BILL_PARSE_ERR		= 7001		//话费发放接口返回数据解析失败
+	GIFT_PHONE_BILL_SEND_FAIL		= 7002		//话费发放失败
+	GIFT_PHONE_BILL_REQUEST_ERR		= 7003		//话费发放请求网络错误
 )
 

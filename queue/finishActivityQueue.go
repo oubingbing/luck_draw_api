@@ -43,6 +43,9 @@ func FinishRunningActivity()  {
 			case model.ACTIVITY_TYPE_GOODS:
 				go HandleGift(item)
 				break
+			case model.ACTIVITY_TYPE_GAME:
+				go HandleGift(item)
+				break
 			case model.ACTIVITY_TYPE_PHONE_BILL:
 				go HandlePhoneBill(item)
 				break
@@ -111,6 +114,7 @@ func HandlePhoneBill(activity model.Activity)  {
 			inbox.JoinLogId = int64(item.ID)
 			inbox.ObjectId = item.ActivityId
 			inbox.ActivityName = activity.Name
+			inbox.OrderId = item.OrderId
 			inbox.Content = fmt.Sprintf("恭喜您，在活动%v中获得%v元话费，稍后将会充值到您的账户中，请留意手机短信消息",activity.Name,avergeBill)
 			mpStr,_ := json.Marshal(&inbox)
 			consume += int64(avergeBill)
@@ -120,6 +124,15 @@ func HandlePhoneBill(activity model.Activity)  {
 			intCmd = redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_PHONE_BILL_QUEUE,string(mpStr))
 			if intCmd.Err() != nil {
 				util.ErrDetail(enums.ACTIVITY_PUSH_BILL_QUEUE_ERR,fmt.Sprintf("推送到话费发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,item.UserId),intCmd.Err().Error())
+			}
+
+			joinLog := &model.JoinLog{}
+			update := make(map[string]interface{})
+			update["remark"] = inbox.Content
+			update["status"] = model.JOIN_LOG_STATUS_WIN
+			updateErr := joinLog.Update(db,uint(inbox.JoinLogId),update)
+			if updateErr != nil {
+				util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())
 			}
 		}
 		//更新所有的
@@ -134,6 +147,7 @@ func HandlePhoneBill(activity model.Activity)  {
 			inbox.Bill = float64(avergeBill)
 			inbox.ObjectId = item.ActivityId
 			inbox.ActivityName = activity.Name
+			inbox.OrderId = item.OrderId
 			inbox.Content = ""
 			consume += avergeBill
 			user[index] = &inbox
@@ -168,6 +182,15 @@ func HandlePhoneBill(activity model.Activity)  {
 			intCmd = redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_PHONE_BILL_QUEUE,string(mpStr))
 			if intCmd.Err() != nil {
 				util.ErrDetail(enums.ACTIVITY_PUSH_BILL_QUEUE_ERR,fmt.Sprintf("推送到话费发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,v.UserId),intCmd.Err().Error())
+			}
+
+			joinLog := &model.JoinLog{}
+			update := make(map[string]interface{})
+			update["remark"] = v.Content
+			update["status"] = model.JOIN_LOG_STATUS_WIN
+			updateErr := joinLog.Update(db,uint(v.JoinLogId),update)
+			if updateErr != nil {
+				util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())
 			}
 		}
 
@@ -227,8 +250,6 @@ func HandleGift(activity model.Activity)  {
 		return
 	}
 
-	fmt.Printf("礼品：%v\n",gift)
-
 	//将活动变更为已完成
 	ac := &model.Activity{}
 	updateActivity := make(map[string]interface{})
@@ -238,6 +259,8 @@ func HandleGift(activity model.Activity)  {
 		util.ErrDetail(enums.ACTIVITY_FINDISH_DB_ERR,"活动变更为已完成数据库出错",activity.ID)
 		return
 	}
+
+	var winId []int64
 
 	var ctx = context.Background()
 	var consume int64 = 0
@@ -311,6 +334,17 @@ func HandleGift(activity model.Activity)  {
 					user[key].Content = fmt.Sprintf("恭喜您在活动 %v 中获得 %v X1，请确保您已填写了收货地址，我们会往您的默认收货地址寄送奖品，谢谢。",activity.Name,gift.Name)
 					util.Info(fmt.Sprintf("中奖用户：%v,中奖活动：%v，中奖内容：%v",user[key].UserId,user[key].ObjectId,user[key].Content))
 
+					joinLog := &model.JoinLog{}
+					update := make(map[string]interface{})
+					update["remark"] = user[key].Content
+					update["status"] = model.JOIN_LOG_STATUS_WIN
+					updateErr := joinLog.Update(db,uint(user[key].JoinLogId),update)
+					if updateErr != nil {
+						util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())
+					}
+
+					winId = append(winId,user[key].JoinLogId)
+
 					mpStr,_ := json.Marshal(user[key])
 					intCmd := redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
 					//推送到队列
@@ -322,8 +356,16 @@ func HandleGift(activity model.Activity)  {
 				}
 			}
 		}
+	}
 
-
+	//更新未中奖的
+	joinLogNot := &model.JoinLog{}
+	update := make(map[string]interface{})
+	update["remark"] = "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
+	update["status"] = model.JOIN_LOG_STATUS_LOSE
+	updateErr := joinLogNot.UpdateNotWin(db,winId,update)
+	if updateErr != nil {
+		util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户未中奖join log数据库异常",updateErr.Error())
 	}
 
 	//更新活动实际消耗奖品数量

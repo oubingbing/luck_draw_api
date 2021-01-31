@@ -250,7 +250,6 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 	activityNum := activity.JoinNum
 	for i := 0; i <= len(fakerUser) - 1 ; i++ {
 		if int(activityNum) == fakerUser[i] {
-			fUser := &model.User{}
 			userIds,err := GetFakerUser(tx)
 			if err != nil {
 				fmt.Println(intCmd.Err())
@@ -261,7 +260,6 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 			fakerUserId := rand.Intn(int(len(userIds)))
 
 			//加入Faker
-			fmt.Printf("假用户id：%v\n",int64(fUser.ID))
 			_,joinLogErr := SaveJoinLog(tx,int64(activity.ID),int64(userIds[fakerUserId].ID),model.JOIN_LOG_STATUS_SUCCESS,model.FAKER_Y)
 			if joinLogErr != nil {
 				tx.Rollback()
@@ -306,6 +304,7 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64,status int8,faker int
 		joinLog.Status = status
 		joinLog.Faker = faker
 		joinLog.Remark = ""
+		joinLog.OrderId = fmt.Sprintf("%v%v",time.Now().UnixNano(),userId)
 
 		effect,err := joinLog.Store(db)
 		if err != nil {

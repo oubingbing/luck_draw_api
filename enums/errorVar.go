@@ -69,3 +69,10 @@ var (
 	InboxPageQueryErr				= errors.New("查询失败")
 	InboxCountQueryErr				= errors.New("查询失败")
 )
+
+//奖品发放
+var (
+	GiftPhoneBillSendIOErr			= errors.New("话费发放接口返回数据读取失败")
+	GiftPhoneBillParseErr			= errors.New("话费发放接口返回数据解析失败")
+	GiftPhoneBillRequestErr			= errors.New("话费发放请求网络错误")
+)

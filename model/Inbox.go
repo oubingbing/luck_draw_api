@@ -23,6 +23,7 @@ type InboxMessage struct {
 	Bill			float64
 	Content     	string
 	ActivityName  	string
+	OrderId			string
 }
 
 type InboxPageSli []enums.InboxPage

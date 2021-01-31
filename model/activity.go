@@ -13,6 +13,7 @@ const (
 	ACTIVITY_TYPE_RED_PAK 		= 1
 	ACTIVITY_TYPE_GOODS   		= 2
 	ACTIVITY_TYPE_PHONE_BILL   	= 3
+	ACTIVITY_TYPE_GAME   		= 4
 )
 
 //活动发布来源，1=平台，2=用户
