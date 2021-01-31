@@ -300,6 +300,7 @@ func HandleGift(activity model.Activity)  {
 	}else{
 		//拼手气
 		user := make(map[int]*model.InboxMessage)
+		var loseUser []*model.InboxMessage
 		if activity.Really ==  model.ACTIVITY_REALLY_Y {
 			//真送
 			for index,item := range joinLogSli {
@@ -326,12 +327,22 @@ func HandleGift(activity model.Activity)  {
 					inbox.ActivityName = activity.Name
 					inbox.Content = "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
 					user[index] = &inbox
+				}else{
+					inbox := model.InboxMessage{}
+					inbox.UserId = item.UserId
+					inbox.JoinLogId = int64(item.ID)
+					inbox.Bill = 1
+					inbox.ObjectId = item.ActivityId
+					inbox.ActivityName = activity.Name
+					inbox.Content = "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
+					loseUser = append(loseUser,&inbox)
 				}
 			}
 		}
 
 		num := len(user) //中奖人数
 		leftAmount := activity.ReceiveLimit
+		fmt.Println(leftAmount)
 		i := 1
 		if leftAmount >= 1 {
 			//循环扣减,直到奖金池为0
@@ -376,8 +387,8 @@ func HandleGift(activity model.Activity)  {
 		}
 
 		//通知未中奖的
-		for i,_ := range user {
-			mpStr,_ := json.Marshal(user[i])
+		for i,_ := range loseUser {
+			mpStr,_ := json.Marshal(loseUser[i])
 			redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
 		}
 	}

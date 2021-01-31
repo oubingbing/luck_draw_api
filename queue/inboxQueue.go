@@ -36,7 +36,7 @@ func ListenInbox(wg *sync.WaitGroup)  {
 				util.Error(fmt.Sprintf("解析inbox数据失败:%v",result.Val()[1]))
 				return
 			}
-
+			
 			inbox := &model.Inbox{
 				UserId:     data.UserId,
 				ObjectType: 1,
