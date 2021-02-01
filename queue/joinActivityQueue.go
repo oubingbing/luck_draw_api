@@ -27,10 +27,9 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	}()
 
 	//tx := db.Begin()
-	tx := db
 	joinLog := &model.JoinLog{}
 	userId = joinLog.UserId
-	err := joinLog.LockById(tx,id)
+	err := joinLog.LockById(db,id)
 	if err == gorm.ErrRecordNotFound {
 		//tx.Rollback()
 		finish = enums.ACTIVITY_DEAL_QUEUE_NOT_FOUND
@@ -46,7 +45,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	}
 
 	activity := &model.Activity{}
-	err = activity.FirstById(tx,joinLog.ActivityId)
+	err = activity.FirstById(db,joinLog.ActivityId)
 	if err == gorm.ErrRecordNotFound {
 		//tx.Rollback()
 		finish = enums.ACTIVITY_DEAL_QUEUE_A_NOT_FOUND
@@ -56,7 +55,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 
 	//Faker join
 	if int(activity.Really) == model.ACTIVITY_REALLY_N {
-		fakerUserErr := service.JoinFakerUser(tx,activity,userId)
+		fakerUserErr := service.JoinFakerUser(db,activity,userId)
 		if fakerUserErr != nil {
 			msg = fakerUserErr.Err.Error()
 			finish = fakerUserErr.Code
@@ -66,7 +65,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 
 	//重新查一次
 	activity = &model.Activity{}
-	err = activity.FirstById(tx,joinLog.ActivityId)
+	err = activity.FirstById(db,joinLog.ActivityId)
 	if err == gorm.ErrRecordNotFound {
 		//tx.Rollback()
 		finish = enums.ACTIVITY_DEAL_QUEUE_A_NOT_FOUND
@@ -78,7 +77,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 		data := make(map[string]interface{})
 		data["remark"] = "人数已满"
 		data["status"] = model.JOIN_LOG_STATUS_FAIL
-		err := joinLog.Update(tx,joinLog.ID,data)
+		err := joinLog.Update(db,joinLog.ID,data)
 		msg = "人数已满，下次抓紧机会啦"
 		finish = enums.ACTIVITY_MEMBER_ENOUTH
 		if err != nil {
@@ -92,7 +91,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	data["remark"] = "加入成功"
 	data["status"] = model.JOIN_LOG_STATUS_SUCCESS
 	data["joined_at"] = time.Now().Format("2006-01-02 15:04:05")
-	err = joinLog.Update(tx,joinLog.ID,data)
+	err = joinLog.Update(db,joinLog.ID,data)
 	if err != nil {
 		//tx.Rollback()
 		finish = enums.ACTIVITY_DEAL_QUEUE_UPDATE_LOG_ERR
@@ -102,7 +101,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 
 	activityData := make(map[string]interface{})
 	activityData["join_num"] = activity.JoinNum+1
-	err = activity.Update(tx,activity.ID,activityData)
+	err = activity.Update(db,activity.ID,activityData)
 	if err != nil {
 		//tx.Rollback()
 		finish = enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR

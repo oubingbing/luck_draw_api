@@ -67,7 +67,9 @@ func (joinLog *JoinLog)Update(db *gorm.DB,id uint,data map[string]interface{}) e
 
 func (joinLog *JoinLog)UpdateNotWin(db *gorm.DB,activityId interface{},ids []int64,data map[string]interface{}) error {
 	var err error
-	newDb := db.Table(joinLog.TableName()).Where("activity_id = ?",activityId)
+	newDb := db.Table(joinLog.TableName()).
+		Where("activity_id = ?",activityId).
+		Not("status", []int8{JOIN_LOG_STATUS_FAIL,JOIN_LOG_STATUS_QUEUE})
 	if len(ids) > 0 {
 		err = newDb.Not("id", ids).Updates(data).Error
 	}else{
@@ -112,7 +114,8 @@ func (joinLog *JoinLog) FindMember(db *gorm.DB,activityId interface{}) (JoinLogM
 		Select("activity_join_log.id,activity_id,user_id,wechat_user.nick_name,wechat_user.avatar_url").
 		Where("activity_id = ?",activityId).
 		Where("activity_join_log.deleted_at is null").
-		Where("activity_join_log.status != ?",JOIN_LOG_STATUS_FAIL).
+		Not("status", []int8{JOIN_LOG_STATUS_FAIL,JOIN_LOG_STATUS_QUEUE}).
+		//Where("activity_join_log.status != ?",JOIN_LOG_STATUS_FAIL).
 		Find(&page).Error
 
 	return page,err

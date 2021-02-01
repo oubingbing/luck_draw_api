@@ -345,8 +345,6 @@ func HandleGift(activity model.Activity)  {
 
 		num := len(user) //中奖人数
 		leftAmount := activity.ReceiveLimit
-		fmt.Println(leftAmount)
-		fmt.Printf("中奖人数：%v\n",num)
 		i := 1
 		if leftAmount >= 1 && num > 0 {
 			//循环扣减,直到奖金池为0
