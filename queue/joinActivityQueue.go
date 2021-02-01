@@ -27,12 +27,13 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 		util.Info(fmt.Sprintf("%v,%v,%v",finish,msg,userId))
 	}()
 
-	tx := db.Begin()
+	//tx := db.Begin()
+	tx := db
 	joinLog := &model.JoinLog{}
 	userId = joinLog.UserId
 	err := joinLog.LockById(tx,id)
 	if err == gorm.ErrRecordNotFound {
-		tx.Rollback()
+		//tx.Rollback()
 		finish = enums.ACTIVITY_DEAL_QUEUE_NOT_FOUND
 		util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_NOT_FOUND,enums.ActivityQueueNotFound.Error(),id)
 		return msg,finish
@@ -41,14 +42,14 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 
 	if joinLog.Status != model.JOIN_LOG_STATUS_QUEUE {
 		finish = enums.ACTIVITY_STATUS_NOT_RUNNING
-		tx.Rollback()
+		//tx.Rollback()
 		return msg,finish
 	}
 
 	activity := &model.Activity{}
 	err = activity.FirstById(tx,joinLog.ActivityId)
 	if err == gorm.ErrRecordNotFound {
-		tx.Rollback()
+		//tx.Rollback()
 		finish = enums.ACTIVITY_DEAL_QUEUE_A_NOT_FOUND
 		util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_A_NOT_FOUND,enums.ActivityQueueANotFound.Error(),id)
 		return msg,finish
@@ -74,7 +75,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 		msg = "人数已满，下次抓紧机会啦"
 		finish = enums.ACTIVITY_MEMBER_ENOUTH
 		if err != nil {
-			tx.Rollback()
+			//tx.Rollback()
 			util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_UPDATE_LOG_ERR,enums.ActivityJoinLogUpdateFailErr.Error(),id)
 			return msg,finish
 		}
@@ -86,7 +87,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	data["joined_at"] = time.Now().Format("2006-01-02 15:04:05")
 	err = joinLog.Update(tx,joinLog.ID,data)
 	if err != nil {
-		tx.Rollback()
+		//tx.Rollback()
 		finish = enums.ACTIVITY_DEAL_QUEUE_UPDATE_LOG_ERR
 		util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_UPDATE_LOG_ERR,enums.ActivityJoinLogUpdateFailErr.Error(),id)
 		return msg,finish
@@ -96,13 +97,13 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	activityData["join_num"] = activityNum
 	err = activity.Update(tx,activity.ID,activityData)
 	if err != nil {
-		tx.Rollback()
+		//tx.Rollback()
 		finish = enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR
 		util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR,enums.ActivityUpdateJoinNumFailErr.Error(),id)
 		return msg,finish
 	}
 
-	tx.Commit()
+	//tx.Commit()
 	msg = "加入成功"
 
 	return msg,finish
