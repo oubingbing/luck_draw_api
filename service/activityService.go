@@ -98,6 +98,9 @@ func StrToArr(str string) ([]string,*enums.ErrorInfo) {
 }
 
 func AppendDomain(domain,str string) ([]string,*enums.ErrorInfo) {
+	if len(str) <= 0 {
+		return []string{},nil
+	}
 	sli,err := StrToArr(str)
 	if err != nil {
 		return nil,err
@@ -262,7 +265,7 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 			//加入Faker
 			_,joinLogErr := SaveJoinLog(tx,int64(activity.ID),int64(userIds[fakerUserId].ID),model.JOIN_LOG_STATUS_SUCCESS,model.FAKER_Y)
 			if joinLogErr != nil {
-				tx.Rollback()
+				//tx.Rollback()
 				return joinLogErr
 			}
 
@@ -270,7 +273,7 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 			activityData["join_num"] = activity.JoinNum+1
 			err = activity.Update(tx,activity.ID,activityData)
 			if err != nil {
-				tx.Rollback()
+				//tx.Rollback()
 				util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR,enums.ActivityUpdateJoinNumFailErr.Error(),activity.ID)
 				return &enums.ErrorInfo{enums.ActivityUpdateJoinNumFailErr,enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR}
 			}
@@ -367,4 +370,19 @@ func GetJoinLogMember(db *gorm.DB,activityId interface{}) (model.JoinLogMemberPa
 	}
 
 	return page,nil
+}
+
+func WinMember(db *gorm.DB,activityId interface{},page *model.PageParam) (model.JoinLogMemberPage,*enums.ErrorInfo) {
+	joinLog := &model.JoinLog{}
+	list,err := joinLog.Wins(db,activityId,page)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil,nil
+		}else{
+			util.ErrDetail(enums.ACTIVITY_JOIN_LOG_QUERY_ERR,"查询获奖者时数据库发生错误",err.Error())
+			return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_LOG_QUERY_ERR,Err:enums.SystemErr}
+		}
+	}
+
+	return list,nil
 }

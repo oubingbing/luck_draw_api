@@ -94,6 +94,7 @@ type JoinLogMember struct {
 	UserId			int64
 	NickName		string
 	AvatarUrl		string
+	Remark  		string
 }
 
 type AddressParam struct {

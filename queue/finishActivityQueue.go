@@ -135,8 +135,9 @@ func HandlePhoneBill(activity model.Activity)  {
 
 			joinLog := &model.JoinLog{}
 			update := make(map[string]interface{})
-			update["remark"] = inbox.Content
+			update["remark"] = fmt.Sprintf("恭喜获得%v元话费",avergeBill)
 			update["status"] = model.JOIN_LOG_STATUS_WIN
+			update["num"]    = inbox.Bill
 			updateErr := joinLog.Update(db,uint(inbox.JoinLogId),update)
 			if updateErr != nil {
 				util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())
@@ -193,8 +194,9 @@ func HandlePhoneBill(activity model.Activity)  {
 
 			joinLog := &model.JoinLog{}
 			update := make(map[string]interface{})
-			update["remark"] = v.Content
+			update["remark"] = fmt.Sprintf("恭喜获得%v元话费",v.Bill)
 			update["status"] = model.JOIN_LOG_STATUS_WIN
+			update["num"]    = v.Bill
 			updateErr := joinLog.Update(db,uint(v.JoinLogId),update)
 			if updateErr != nil {
 				util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())
@@ -274,6 +276,7 @@ func HandleGift(activity model.Activity)  {
 	update := make(map[string]interface{})
 	update["remark"] = "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
 	update["status"] = model.JOIN_LOG_STATUS_LOSE
+	updateActivity["num"] = float64(0)
 	updateErr := joinLogNot.UpdateNotWin(db,activity.ID,winId,update)
 	if updateErr != nil {
 		util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"更新用户未中奖join log数据库异常",updateErr.Error())
@@ -343,8 +346,9 @@ func HandleGift(activity model.Activity)  {
 		num := len(user) //中奖人数
 		leftAmount := activity.ReceiveLimit
 		fmt.Println(leftAmount)
+		fmt.Printf("中奖人数：%v\n",num)
 		i := 1
-		if leftAmount >= 1 {
+		if leftAmount >= 1 && num > 0 {
 			//循环扣减,直到奖金池为0
 			for  {
 				if leftAmount <= 0 {
@@ -364,8 +368,9 @@ func HandleGift(activity model.Activity)  {
 
 					joinLog := &model.JoinLog{}
 					update := make(map[string]interface{})
-					update["remark"] = user[key].Content
+					update["remark"] = fmt.Sprintf("恭喜获得 %v X1",activity.Name,gift.Name)
 					update["status"] = model.JOIN_LOG_STATUS_WIN
+					update["num"] 	 = 1
 					updateErr := joinLog.Update(db,uint(user[key].JoinLogId),update)
 					if updateErr != nil {
 						util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())

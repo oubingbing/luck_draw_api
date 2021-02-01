@@ -210,3 +210,34 @@ func ActivityType(ctx *gin.Context)  {
 	util.ResponseJson(ctx,enums.SUCCESS,"ok",data)
 	return
 }
+
+func GetWins(ctx *gin.Context)  {
+	activityId,ok:= ctx.GetQuery("activity_id")
+	if !ok {
+		util.ResponseJson(ctx,enums.ACTIVITY_Id_EMPYT,"参数不能为空",nil)
+		return
+	}
+
+	var param model.PageParam
+	errInfo := &enums.ErrorInfo{}
+	if errInfo.Err = ctx.ShouldBind(&param); errInfo.Err != nil {
+		util.ResponseJson(ctx,enums.ACTIVITY_PARAM_ERR,errInfo.Err.Error(),nil)
+		return
+	}
+
+	db,connectErr := model.Connect()
+	defer db.Close()
+	if connectErr != nil {
+		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
+		return
+	}
+
+	result,err := service.WinMember(db,activityId,&param)
+	if err != nil {
+		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
+		return
+	}
+
+	util.ResponseJson(ctx,enums.SUCCESS,"ok",result)
+	return
+}

@@ -36,7 +36,13 @@ func Connect() (*gorm.DB,*enums.ErrorInfo) {
 		return nil,errorInfo
 	}
 
-	db.LogMode(true)
+	db.DB().SetMaxIdleConns(10)
+	db.DB().SetMaxOpenConns(200)
+
+	cf,_ := util.GetConfig()
+	if cf["ENV"] != "prod" {
+		//db.LogMode(true)
+	}
 
 	return db,nil
 }
