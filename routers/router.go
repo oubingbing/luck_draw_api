@@ -29,6 +29,9 @@ func InitRouter() *gin.Engine {
 
 		//活动类型
 		notAuth.GET("/activity/category",controller.ActivityType)
+
+		//获取中奖人员
+		notAuth.GET("/activity/wins",controller.GetWins)
 	}
 
 	auth := router.Group("/api")

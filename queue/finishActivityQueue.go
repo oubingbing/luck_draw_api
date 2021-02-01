@@ -135,7 +135,7 @@ func HandlePhoneBill(activity model.Activity)  {
 
 			joinLog := &model.JoinLog{}
 			update := make(map[string]interface{})
-			update["remark"] = inbox.Content
+			update["remark"] = fmt.Sprintf("恭喜获得%v元话费",avergeBill)
 			update["status"] = model.JOIN_LOG_STATUS_WIN
 			update["num"]    = inbox.Bill
 			updateErr := joinLog.Update(db,uint(inbox.JoinLogId),update)
@@ -194,7 +194,7 @@ func HandlePhoneBill(activity model.Activity)  {
 
 			joinLog := &model.JoinLog{}
 			update := make(map[string]interface{})
-			update["remark"] = v.Content
+			update["remark"] = fmt.Sprintf("恭喜获得%v元话费",v.Bill)
 			update["status"] = model.JOIN_LOG_STATUS_WIN
 			update["num"]    = v.Bill
 			updateErr := joinLog.Update(db,uint(v.JoinLogId),update)
@@ -368,7 +368,7 @@ func HandleGift(activity model.Activity)  {
 
 					joinLog := &model.JoinLog{}
 					update := make(map[string]interface{})
-					update["remark"] = user[key].Content
+					update["remark"] = fmt.Sprintf("恭喜获得 %v X1",activity.Name,gift.Name)
 					update["status"] = model.JOIN_LOG_STATUS_WIN
 					update["num"] 	 = 1
 					updateErr := joinLog.Update(db,uint(user[key].JoinLogId),update)

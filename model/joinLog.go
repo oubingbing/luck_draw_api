@@ -126,3 +126,15 @@ func (joinLog *JoinLog) GetJoinLogByActivityId(db *gorm.DB,activityId uint) ([]J
 		Find(&joinLogSli).Error
 	return joinLogSli,err
 }
+
+func (joinLog *JoinLog) Wins(db *gorm.DB,activityId interface{},page *PageParam) (JoinLogMemberPage,error) {
+	var pageList JoinLogMemberPage
+	err :=  Page(db,joinLog.TableName(),page).
+		Joins("left join wechat_user on wechat_user.id = activity_join_log.user_id").
+		Select("activity_join_log.id,activity_join_log.remark,activity_id,user_id,wechat_user.nick_name,wechat_user.avatar_url").
+		Where("activity_id = ?",activityId).
+		//Where("activity_join_log.deleted_at is null").
+		Where("activity_join_log.status in (?)", []int8{JOIN_LOG_STATUS_WIN,JOIN_LOG_SEND_AWARD_SUCCESS,JOIN_LOG_SEND_AWARD_FAIL}).
+		Find(&pageList).Error
+	return pageList,err
+}

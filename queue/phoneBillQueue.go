@@ -90,7 +90,7 @@ func HandleSendPhoneBill(inboxMessage string)  {
 
 	joinLog := &model.JoinLog{}
 	update := make(map[string]interface{})
-	update["remark"] = remark
+	//update["remark"] = remark
 	update["status"] = status
 	updateErr := joinLog.Update(db,uint(inbox.JoinLogId),update)
 	if updateErr != nil {

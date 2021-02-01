@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"github.com/jinzhu/gorm"
 	"luck_draw/enums"
 	"time"
@@ -51,7 +50,6 @@ func (inbox *Inbox)Page(db *gorm.DB,userId interface{},page *PageParam) (InboxPa
 		Select("inbox.id,inbox.user_id,object_type,object_id,inbox.content,read_at,activity.name,activity.attachments").
 		Order("id desc").
 		Find(&inboxList).Error
-	fmt.Println(err)
 	return inboxList,err
 }
 

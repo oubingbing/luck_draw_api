@@ -41,7 +41,7 @@ func Connect() (*gorm.DB,*enums.ErrorInfo) {
 
 	cf,_ := util.GetConfig()
 	if cf["ENV"] != "prod" {
-		db.LogMode(true)
+		//db.LogMode(true)
 	}
 
 	return db,nil
