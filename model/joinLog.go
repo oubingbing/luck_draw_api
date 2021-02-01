@@ -30,6 +30,7 @@ type JoinLog struct {
 	JoinedAt 		*time.Time  `gorm:"column:joined_at"` 		//加入的时间
 	Faker			int8		`gorm:"column:faker"`
 	OrderId			string		`gorm:"column:order_id"`
+	Num				float64		`gorm:"column:num"`
 }
 
 type JoinLogPage []enums.JoinLogTrans
