@@ -145,11 +145,14 @@ func ActivityDetail(db *gorm.DB,id string,userId float64) (*enums.ActivityDetail
 	}
 	detail.Attachments = ""
 
-	detail.ShareImageSli,parseErr = AppendDomain(domain,detail.ShareImage)
-	if parseErr != nil {
-		return nil,parseErr
+	fmt.Println("分享图片的长度")
+	if len(detail.ShareImage) > 10 {
+		detail.ShareImageSli,parseErr = AppendDomain(domain,detail.ShareImage)
+		if parseErr != nil {
+			return nil,parseErr
+		}
+		detail.ShareImage = ""
 	}
-	detail.ShareImage = ""
 
 	detail.Gift.AttachmentsSli,parseErr = AppendDomain(domain,detail.Gift.Attachments)
 	if parseErr != nil {

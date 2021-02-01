@@ -22,8 +22,6 @@ const PHONE_BILL_URL = "http://op.tianjurenhe.com/ofpay/mobile/onlineorder"
 func JuHePhoneBill(phone ,orderId string,bill float64) (JuHeResponse,*enums.ErrorInfo) {
 	var errInfo *enums.ErrorInfo
 	var juHeResponse JuHeResponse
-	juHeResponse.ErrorCode = 0
-	return juHeResponse,errInfo
 
 	config,_ := util.GetConfig()
 	appKey := config["JU_APP_KEY"]

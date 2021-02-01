@@ -62,11 +62,14 @@ func HandleSendPhoneBill(inboxMessage string)  {
 							util.ErrDetail(responseErr.Code,"发放话费异常",responseErr.Err.Error())
 							break
 						}
+						util.Info(fmt.Sprintf("话费充值完成,code:%v,reason:%v,phone:%v,金额：%v,订单号：%v",response.ErrorCode,response.Reason,user.Phone,billList[i],inbox.OrderId))
 						if response.ErrorCode == int64(0) {
 							remark = fmt.Sprintf("话费充值成功，请稍后确认是否充值到账，有任何问题请联系客服，谢谢")
 							status = int8(model.JOIN_LOG_SEND_AWARD_SUCCESS)
+							util.Info(fmt.Sprintf("话费充值成功，手机号：%v，金额：%v，订单号：%v",user.Phone,billList[i],inbox.OrderId))
 						}else{
 							remark = fmt.Sprintf("话费充值失败，请联系客服，谢谢")
+							util.Error(fmt.Sprintf("话费充值失败，手机号：%v，金额：%v，订单号：%v",user.Phone,billList[i],inbox.OrderId))
 							status = int8(model.JOIN_LOG_SEND_AWARD_FAIL)
 						}
 
