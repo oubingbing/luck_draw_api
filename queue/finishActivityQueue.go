@@ -368,7 +368,9 @@ func HandleGift(activity model.Activity)  {
 
 					joinLog := &model.JoinLog{}
 					update := make(map[string]interface{})
-					update["remark"] = fmt.Sprintf("恭喜获得 %v X1",activity.Name,gift.Name)
+					update["remark"] = fmt.Sprintf("恭喜获得 %v X1",gift.Name)
+
+					util.Info(fmt.Sprintf("恭喜获得 %v X1",gift.Name))
 					update["status"] = model.JOIN_LOG_STATUS_WIN
 					update["num"] 	 = 1
 					updateErr := joinLog.Update(db,uint(user[key].JoinLogId),update)

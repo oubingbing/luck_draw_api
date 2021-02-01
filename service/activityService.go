@@ -244,13 +244,13 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 	var fakerUser []int
 	parserErr := json.Unmarshal([]byte(intCmd.Val()),&fakerUser)
 	if parserErr != nil {
-		fmt.Println(intCmd.Err())
 		//解析数据失败
 		return &enums.ErrorInfo{enums.SystemErr,enums.SYSTEM_ERR}
 	}
 
-	sort.Ints(fakerUser)
 	activityNum := activity.JoinNum
+	sort.Ints(fakerUser)
+	activityNewNum := activity.JoinNum
 	for i := 0; i <= len(fakerUser) - 1 ; i++ {
 		if int(activityNum) == fakerUser[i] {
 			userIds,err := GetFakerUser(tx)
@@ -269,17 +269,19 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 				return joinLogErr
 			}
 
-			activityData := make(map[string]interface{})
-			activityData["join_num"] = activity.JoinNum+1
-			err = activity.Update(tx,activity.ID,activityData)
-			if err != nil {
-				//tx.Rollback()
-				util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR,enums.ActivityUpdateJoinNumFailErr.Error(),activity.ID)
-				return &enums.ErrorInfo{enums.ActivityUpdateJoinNumFailErr,enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR}
-			}
+			activityNewNum += 1
 		}
 
 		//判断参加用户是佛已经满人
+	}
+
+	activityData := make(map[string]interface{})
+	activityData["join_num"] = activityNewNum
+	err := activity.Update(tx,activity.ID,activityData)
+	if err != nil {
+		//tx.Rollback()
+		util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR,enums.ActivityUpdateJoinNumFailErr.Error(),activity.ID)
+		return &enums.ErrorInfo{enums.ActivityUpdateJoinNumFailErr,enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR}
 	}
 
 	return nil

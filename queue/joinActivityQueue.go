@@ -20,7 +20,6 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	defer func() {
 		db.Close()
 		notifyErr := service.SocketNotify(string(userId),finish,msg)
-		util.Info("已加到通知")
 		if notifyErr != nil {
 			util.Error(notifyErr.Error())
 		}
@@ -56,7 +55,6 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	}
 
 	//Faker join
-	activityNum := activity.JoinNum + 1
 	if int(activity.Really) == model.ACTIVITY_REALLY_N {
 		fakerUserErr := service.JoinFakerUser(tx,activity,userId)
 		if fakerUserErr != nil {
@@ -64,7 +62,16 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 			finish = fakerUserErr.Code
 			return msg,finish
 		}
-		activityNum += 1
+	}
+
+	//重新查一次
+	activity = &model.Activity{}
+	err = activity.FirstById(tx,joinLog.ActivityId)
+	if err == gorm.ErrRecordNotFound {
+		//tx.Rollback()
+		finish = enums.ACTIVITY_DEAL_QUEUE_A_NOT_FOUND
+		util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_A_NOT_FOUND,enums.ActivityQueueANotFound.Error(),id)
+		return msg,finish
 	}
 
 	if float32(activity.JoinNum) >= activity.JoinLimitNum {
@@ -94,7 +101,7 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	}
 
 	activityData := make(map[string]interface{})
-	activityData["join_num"] = activityNum
+	activityData["join_num"] = activity.JoinNum+1
 	err = activity.Update(tx,activity.ID,activityData)
 	if err != nil {
 		//tx.Rollback()
