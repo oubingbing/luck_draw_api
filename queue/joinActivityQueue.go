@@ -176,6 +176,7 @@ func Listen()  {
 	go ListenInbox(&wg)
 	go ListenAttemptJoin(&wg)
 	go ListenPhoneBill(&wg)
+	go ListenWxNotify(&wg)
 	wg.Wait()
 	//程序退出，需要通知开发人员
 }
