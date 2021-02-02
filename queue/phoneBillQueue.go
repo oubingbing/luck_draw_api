@@ -61,6 +61,8 @@ func HandleSendPhoneBill(inboxMessage string)  {
 						bill := 0
 						if i == 0 {
 							bill = 1
+						}else if sumBill == float64(billList[i]){
+							bill = billList[i]
 						}else{
 							bill = billList[i-1]
 						}

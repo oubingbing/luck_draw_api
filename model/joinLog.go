@@ -88,6 +88,20 @@ func (joinLog *JoinLog)LockById(db *gorm.DB,id interface{}) error {
 	return err
 }
 
+func (joinLog *JoinLog) CountTodayJoinLog(db *gorm.DB,userId interface{}) (int64,error) {
+	var num int64
+	err := db.Table(joinLog.TableName()).
+		//Set("gorm:query_option", "FOR UPDATE").
+		Where("user_id = ?",userId).
+		Not("status", []int8{JOIN_LOG_STATUS_FAIL,JOIN_LOG_STATUS_QUEUE}).
+		Where("created_at  >= ?",time.Now().Format(enums.DATE_ONLY_FORMAT)).
+		Where("created_at  <= ?",time.Now().Format(enums.DATE_FORMAT)).
+		Where("deleted_at is null").
+		Count(&num).Error
+
+	return num,err
+}
+
 func (joinLog *JoinLog)GetByUserId(db *gorm.DB,userId interface{},status string) (JoinLogPage,error) {
 	var page JoinLogPage
 	builder := db.Table(joinLog.TableName()).
@@ -116,6 +130,7 @@ func (joinLog *JoinLog) FindMember(db *gorm.DB,activityId interface{}) (JoinLogM
 		Where("activity_join_log.deleted_at is null").
 		Not("status", []int8{JOIN_LOG_STATUS_FAIL,JOIN_LOG_STATUS_QUEUE}).
 		//Where("activity_join_log.status != ?",JOIN_LOG_STATUS_FAIL).
+		Order("activity_join_log.id asc").
 		Find(&page).Error
 
 	return page,err
@@ -138,6 +153,7 @@ func (joinLog *JoinLog) Wins(db *gorm.DB,activityId interface{},page *PageParam)
 		Where("activity_id = ?",activityId).
 		//Where("activity_join_log.deleted_at is null").
 		Where("activity_join_log.status in (?)", []int8{JOIN_LOG_STATUS_WIN,JOIN_LOG_SEND_AWARD_SUCCESS,JOIN_LOG_SEND_AWARD_FAIL}).
+		Order("activity_join_log.id asc").
 		Find(&pageList).Error
 	return pageList,err
 }

@@ -8,6 +8,7 @@ const ACTIVITY_HANDLE_GIFT_QUEUE			= "luck_handle_gift_queue"  	 		//抽礼品�
 const ACTIVITY_QUEUE_TRY					= "luck_activity_queue_try"  			//参加活动重试队列
 const SOCKET_USER_TOKEN  					= "luck_api_socket_token"	 			//用户socket token
 const DATE_FORMAT  							= "2006-01-02 15:04:05"
+const DATE_ONLY_FORMAT  					= "2006-01-02 00:00:00"
 const DATE_FORMAT_STRING  					= "20060102150405"
 
 //业务不相关错误
@@ -75,6 +76,7 @@ const (
 	ACTIVITY_UPDATE_CONSUME_DB_ERR		= 2028		//活动更新实际消耗奖品数量出错
 	ACTIVITY_PUSH_GIFT_QUEUE_ERR		= 2029		//推送到物品发货队列失败
 	ACTIVITY_UPDATE_JL_ERR				= 2030		//跟新join log错误
+	ACTIVITY_JOIN_LIMIT_TIME			= 2031		//您今天参与的活动次数已经达到五次了，明天再来吧
 )
 
 //礼品相关 3000 ~ 3999

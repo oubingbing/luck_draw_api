@@ -145,7 +145,6 @@ func ActivityDetail(db *gorm.DB,id string,userId float64) (*enums.ActivityDetail
 	}
 	detail.Attachments = ""
 
-	fmt.Println("分享图片的长度")
 	if len(detail.ShareImage) > 10 {
 		detail.ShareImageSli,parseErr = AppendDomain(domain,detail.ShareImage)
 		if parseErr != nil {
@@ -187,38 +186,42 @@ func ActivityDetail(db *gorm.DB,id string,userId float64) (*enums.ActivityDetail
  */
 func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 	activity := &model.Activity{}
-	tx := db.Begin()
+
+	var hadJoin int64
+	joinLog := &model.JoinLog{}
+	hadJoin,err := joinLog.CountTodayJoinLog(db,userId)
+	if err == nil {
+		if hadJoin > 5 {
+			//已经超过限制
+			return 0,&enums.ErrorInfo{enums.ActivityJoinLimit,enums.ACTIVITY_JOIN_LIMIT_TIME}
+		}
+	}
 
 	//悲观锁
-	err := activity.LockById(tx,id)
+	err = activity.LockById(db,id)
 	if err != nil {
-		tx.Rollback()
 		util.ErrDetail(enums.ACTIVITY_DETAIL_QUERY_ERR,"活动详情查询错误-"+err.Error(),id)
 		return 0,&enums.ErrorInfo{enums.NetErr,enums.ACTIVITY_DETAIL_QUERY_ERR}
 	}
 
 	if err == gorm.ErrRecordNotFound {
-		tx.Rollback()
 		util.ErrDetail(enums.ACTIVITY_DETAIL_NOT_FOUND,"活动详情不存在-",id)
 		return 0,&enums.ErrorInfo{activityDetailNotFound,enums.ACTIVITY_DETAIL_NOT_FOUND}
 	}
 
 	if float32(activity.JoinNum) >= activity.JoinLimitNum {
-		tx.Rollback()
 		return 0,&enums.ErrorInfo{joinLimit,enums.ACTIVITY_JOIN_LIMIT}
 	}
 
 	//写入参与日志
-	joinLog,joinLogErr := SaveJoinLog(tx,int64(activity.ID),userId,model.JOIN_LOG_STATUS_QUEUE,model.FAKER_N)
+	joinLog,joinLogErr := SaveJoinLog(db,int64(activity.ID),userId,model.JOIN_LOG_STATUS_QUEUE,model.FAKER_N)
 	if joinLogErr != nil {
-		tx.Rollback()
 		return 0,joinLogErr
 	}
 
 	//加入队列
 	var ctx = context.Background()
 	redis := util.NewRedis()
-	fmt.Println("走 ")
 	intCmd := redis.Client.LPush(ctx,enums.ACTIVITY_QUEUE,joinLog.ID)
 	if intCmd.Err() != nil {
 		util.ErrDetail(
@@ -227,8 +230,6 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 			fmt.Sprintf("activity_id:%v，user_id:%v",activity.ID,userId))
 		return 0,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_SAVE_LOG_FAIL,Err:enums.ActivityPushQueueErr}
 	}
-
-	tx.Commit()
 
 	return joinLog.ID,nil
 }
@@ -387,6 +388,25 @@ func WinMember(db *gorm.DB,activityId interface{},page *model.PageParam) (model.
 			util.ErrDetail(enums.ACTIVITY_JOIN_LOG_QUERY_ERR,"查询获奖者时数据库发生错误",err.Error())
 			return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_LOG_QUERY_ERR,Err:enums.SystemErr}
 		}
+	}
+
+	for j,item := range list {
+		newName := ""
+		if len(item.NickName) > 0 {
+			str := []rune(item.NickName)
+			for i := 0; i < len(str); i++ {
+				if i == 0 {
+					newName += string(str[i])
+				}else if len(str) == 2 {
+					newName += "*"
+				}else if i == (len(str)-1){
+					newName += string(str[i])
+				}else{
+					newName += "*"
+				}
+			}
+		}
+		list[j].NickName = newName
 	}
 
 	return list,nil
