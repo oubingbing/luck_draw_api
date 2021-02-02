@@ -2,6 +2,7 @@ package enums
 
 const ACTIVITY_QUEUE						= "luck_activity_queue"  	 			//参加活动队列
 const INBOX_QUEUE							= "luck_inbox_queue"  	 				//保存消息盒子
+const WX_NOTIFY_QUEUE						= "luck_wx_notify_queue"  	 			//微信通知队列
 const ACTIVITY_HANDLE_PHONE_BILL_QUEUE		= "luck_handle_phone_bill_queue"  	 	//话费充值队列
 const ACTIVITY_HANDLE_REA_PAK_QUEUE			= "luck_handle_red_pak_queue"  	 		//发送红包队列
 const ACTIVITY_HANDLE_GIFT_QUEUE			= "luck_handle_gift_queue"  	 		//抽礼品队列
@@ -10,6 +11,9 @@ const SOCKET_USER_TOKEN  					= "luck_api_socket_token"	 			//用户socket token
 const DATE_FORMAT  							= "2006-01-02 15:04:05"
 const DATE_ONLY_FORMAT  					= "2006-01-02 00:00:00"
 const DATE_FORMAT_STRING  					= "20060102150405"
+const WX_ACCESS_TOKEN_CACHE_KEY  			= "luck_draw_wx_access_token"
+const WX_TEMPLATE_SEND_SUCCESS  			= "GYJrbEJfKSFWIKcakFc03dm8F27IcBVoz8OUf2aawQI"
+const WX_TEMPLATE_DRAW_FINISH  				= "HHOHnkh0UmYr-bifPvf1o0LWUHpBynwbxLbfPVMDQoA"
 
 //业务不相关错误
 const (
@@ -20,6 +24,7 @@ const (
 	DECODE_ARR_ERR			= 4
 	NOT_FOUND				= 5
 	SYSTEM_ERR				= 6					//系统异常
+	WX_NOTIFY_IO_ERR		= 7					//模板消息读取数据流错误
 )
 
 //授权相关 1000 ~ 1999
@@ -41,6 +46,9 @@ const (
 	Auth_TRANS_UID_ERR				= 1013		//userId类型转化失败
 	AUTH_USER_NOT_FOUND				= 1014		//用户不存在
 	AUTH_USER_UPDATE_PHONE_ERR		= 1015		//用户更新手机号失败
+	AUTH_WX_ACCESSTOKEN_READ_IO_ERR = 1016		//获取Access token读取数据流错误
+	AUTH_PARSE_ACCESS_TOKEN_ERR 	= 1017		//解析Access token失败
+	AUTH_PARSE_ACCESS_REQUEST_ERR 	= 1018		//请求Access token失败
 )
 
 //活动相关 2000 ~ 2999

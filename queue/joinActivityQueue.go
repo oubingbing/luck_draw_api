@@ -154,6 +154,22 @@ func ListenPhoneBill(wg *sync.WaitGroup)  {
 	})
 }
 
+/**
+ * 监听发送微信模板消息
+ */
+func ListenWxNotify(wg *sync.WaitGroup)  {
+	redis := util.NewRedis()
+	t := time.Second * 59
+
+	queue := enums.WX_NOTIFY_QUEUE
+	redis.OnQueue(wg,queue,t, func(result *redis2.StringSliceCmd, e error) {
+		if len(result.Val()) > 0 {
+			util.Info(fmt.Sprintf("取出需要发送话费的数据：%v",result.Val()[1]));
+			HandleWxNotify(result.Val()[1])
+		}
+	})
+}
+
 func Listen()  {
 	var wg sync.WaitGroup
 	wg.Add(1)

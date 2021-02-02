@@ -394,15 +394,19 @@ func WinMember(db *gorm.DB,activityId interface{},page *model.PageParam) (model.
 		newName := ""
 		if len(item.NickName) > 0 {
 			str := []rune(item.NickName)
-			for i := 0; i < len(str); i++ {
-				if i == 0 {
-					newName += string(str[i])
-				}else if len(str) == 2 {
-					newName += "*"
-				}else if i == (len(str)-1){
-					newName += string(str[i])
-				}else{
-					newName += "*"
+			if len(str) == 1 {
+				newName += "*"
+			}else{
+				for i := 0; i < len(str); i++ {
+					if i == 0 {
+						newName += string(str[i])
+					}else if len(str) == 2 {
+						newName += "*"
+					}else if i == (len(str)-1){
+						newName += string(str[i])
+					}else{
+						newName += "*"
+					}
 				}
 			}
 		}

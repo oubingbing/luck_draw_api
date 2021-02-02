@@ -99,6 +99,7 @@ func HandlePhoneBill(activity model.Activity)  {
 		return
 	}
 
+	curTime := time.Now().Format("DATE_FORMAT")
 	var ctx = context.Background()
 	var consume int64 = 0
 	if activity.DrawType == model.ACTIVITY_DRAW_TYPE_AVERAGE {
@@ -123,6 +124,7 @@ func HandlePhoneBill(activity model.Activity)  {
 			inbox.ActivityName = activity.Name
 			inbox.OrderId = item.OrderId
 			inbox.Content = fmt.Sprintf("恭喜您，在活动%v中获得%v元话费，稍后将会充值到您的账户中，请留意手机短信消息",activity.Name,avergeBill)
+			remark := inbox.Content
 			mpStr,_ := json.Marshal(&inbox)
 			consume += int64(avergeBill)
 
@@ -141,6 +143,22 @@ func HandlePhoneBill(activity model.Activity)  {
 			updateErr := joinLog.Update(db,uint(inbox.JoinLogId),update)
 			if updateErr != nil {
 				util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())
+			}
+
+			userInfo:= &model.User{}
+			findUserErr := userInfo.FindById(db,inbox.UserId)
+			if findUserErr == nil {
+				mp := make(map[string]string)
+				mp["type"] = "d"
+				mp["id"] = fmt.Sprintf("%v",activity.ID)
+				mp["openid"] = userInfo.OpenId
+				mp["activityName"] = activity.Name
+				mp["result"] = "已中奖"
+				mp["time"] = curTime
+				mp["giftName"] = gift.Name
+				mp["remark"] = remark
+				mpStr,_ := json.Marshal(&mp)
+				redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
 			}
 		}
 		//更新所有的
@@ -190,6 +208,22 @@ func HandlePhoneBill(activity model.Activity)  {
 			intCmd = redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_PHONE_BILL_QUEUE,string(mpStr))
 			if intCmd.Err() != nil {
 				util.ErrDetail(enums.ACTIVITY_PUSH_BILL_QUEUE_ERR,fmt.Sprintf("推送到话费发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,v.UserId),intCmd.Err().Error())
+			}
+
+			userInfo:= &model.User{}
+			findUserErr := userInfo.FindById(db,v.UserId)
+			if findUserErr == nil {
+				mp := make(map[string]string)
+				mp["type"] = "d"
+				mp["id"] = fmt.Sprintf("%v",activity.ID)
+				mp["openid"] = userInfo.OpenId
+				mp["activityName"] = activity.Name
+				mp["result"] = "已中奖"
+				mp["time"] = curTime
+				mp["giftName"] = gift.Name
+				mp["remark"] = v.Content
+				mpStr,_ := json.Marshal(&mp)
+				redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
 			}
 
 			joinLog := &model.JoinLog{}
@@ -271,10 +305,11 @@ func HandleGift(activity model.Activity)  {
 
 	var winId []int64
 
+	loseRemark := "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
 	//更新未中奖的
 	joinLogNot := &model.JoinLog{}
 	update := make(map[string]interface{})
-	update["remark"] = "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
+	update["remark"] = loseRemark
 	update["status"] = model.JOIN_LOG_STATUS_LOSE
 	updateActivity["num"] = float64(0)
 	updateErr := joinLogNot.UpdateNotWin(db,activity.ID,winId,update)
@@ -282,6 +317,10 @@ func HandleGift(activity model.Activity)  {
 		util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"更新用户未中奖join log数据库异常",updateErr.Error())
 	}
 
+	//未中奖用户
+	notWinUsers := make(map[int64]int64)
+
+	curTime := time.Now().Format("DATE_FORMAT")
 	var ctx = context.Background()
 	var consume int64 = 0
 	if activity.DrawType == model.ACTIVITY_DRAW_TYPE_AVERAGE {
@@ -314,8 +353,9 @@ func HandleGift(activity model.Activity)  {
 					inbox.Bill = 1
 					inbox.ObjectId = item.ActivityId
 					inbox.ActivityName = activity.Name
-					inbox.Content = "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
+					inbox.Content = loseRemark
 					user[index] = &inbox
+					notWinUsers[item.UserId] = item.UserId
 				}
 			}
 		}else{
@@ -328,7 +368,7 @@ func HandleGift(activity model.Activity)  {
 					inbox.Bill = 1
 					inbox.ObjectId = item.ActivityId
 					inbox.ActivityName = activity.Name
-					inbox.Content = "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
+					inbox.Content = loseRemark
 					user[index] = &inbox
 				}else{
 					inbox := model.InboxMessage{}
@@ -337,8 +377,9 @@ func HandleGift(activity model.Activity)  {
 					inbox.Bill = 1
 					inbox.ObjectId = item.ActivityId
 					inbox.ActivityName = activity.Name
-					inbox.Content = "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
+					inbox.Content = loseRemark
 					loseUser = append(loseUser,&inbox)
+					notWinUsers[item.UserId] = item.UserId
 				}
 			}
 		}
@@ -378,6 +419,26 @@ func HandleGift(activity model.Activity)  {
 
 					winId = append(winId,user[key].JoinLogId)
 
+					userInfo:= &model.User{}
+					findUserErr := userInfo.FindById(db,user[key].UserId)
+					if findUserErr == nil {
+						mp := make(map[string]string)
+						mp["type"] = "d"
+						mp["id"] = fmt.Sprintf("%v",activity.ID)
+						mp["openid"] = userInfo.OpenId
+						mp["activityName"] = activity.Name
+						mp["result"] = "已中奖"
+						mp["time"] = curTime
+						mp["giftName"] = gift.Name
+						mp["remark"] = user[key].Content
+						mpStr,_ := json.Marshal(&mp)
+						redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
+						//service.WxNotifyDraw(activity.ID,userInfo.OpenId ,activity.Name,"已中奖",curTime,gift.Name,user[key].Content)
+					}
+
+					//记录中奖用户ID
+					delete(notWinUsers,user[key].UserId)
+
 					//通知中奖的
 					mpStr,_ := json.Marshal(user[key])
 					intCmd := redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
@@ -396,6 +457,27 @@ func HandleGift(activity model.Activity)  {
 			mpStr,_ := json.Marshal(loseUser[i])
 			redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
 		}
+	}
+
+	for k,_ := range notWinUsers {
+		userInfo:= &model.User{}
+		findUserErr := userInfo.FindById(db,notWinUsers[k])
+		if findUserErr == nil {
+			//WX_NOTOFY_QUEUE
+			mp := make(map[string]interface{})
+			mp["type"] = "d"
+			mp["id"] = fmt.Sprintf("%v",activity.ID)
+			mp["openid"] = userInfo.OpenId
+			mp["activityName"] = activity.Name
+			mp["result"] = "未中奖"
+			mp["time"] = curTime
+			mp["giftName"] = gift.Name
+			mp["remark"] = loseRemark
+			mpStr,_ := json.Marshal(&mp)
+			redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
+			//service.WxNotifyDraw(activity.ID,userInfo.OpenId ,activity.Name,"未中奖",curTime,gift.Name,"很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！")
+		}
+
 	}
 
 	//更新活动实际消耗奖品数量

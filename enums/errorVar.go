@@ -77,3 +77,8 @@ var (
 	GiftPhoneBillParseErr			= errors.New("话费发放接口返回数据解析失败")
 	GiftPhoneBillRequestErr			= errors.New("话费发放请求网络错误")
 )
+
+//微信相关
+var (
+	WxAccessTokenRequestErr			= errors.New("请求Access token失败")
+)
