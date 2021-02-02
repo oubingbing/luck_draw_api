@@ -99,7 +99,7 @@ func HandlePhoneBill(activity model.Activity)  {
 		return
 	}
 
-	curTime := time.Now().Format("DATE_FORMAT")
+	curTime := time.Now().Format(enums.DATE_FORMAT)
 	var ctx = context.Background()
 	var consume int64 = 0
 	if activity.DrawType == model.ACTIVITY_DRAW_TYPE_AVERAGE {
@@ -320,7 +320,7 @@ func HandleGift(activity model.Activity)  {
 	//未中奖用户
 	notWinUsers := make(map[int64]int64)
 
-	curTime := time.Now().Format("DATE_FORMAT")
+	curTime := time.Now().Format(enums.DATE_FORMAT)
 	var ctx = context.Background()
 	var consume int64 = 0
 	if activity.DrawType == model.ACTIVITY_DRAW_TYPE_AVERAGE {

@@ -18,7 +18,7 @@ func HandleSendPhoneBill(inboxMessage string)  {
 		return
 	}
 
-	curTime := time.Now().Format("DATE_FORMAT")
+	curTime := time.Now().Format(enums.DATE_FORMAT)
 	var ctx = context.Background()
 	redis := util.NewRedis()
 	defer func() {
