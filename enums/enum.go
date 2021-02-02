@@ -10,6 +10,7 @@ const ACTIVITY_QUEUE_TRY					= "luck_activity_queue_try"  			//参加活动重�
 const SOCKET_USER_TOKEN  					= "luck_api_socket_token"	 			//用户socket token
 const DATE_FORMAT  							= "2006-01-02 15:04:05"
 const DATE_ONLY_FORMAT  					= "2006-01-02 00:00:00"
+const DATE_DAY_FORMAT  						= "2006-01-02"
 const DATE_FORMAT_STRING  					= "20060102150405"
 const WX_ACCESS_TOKEN_CACHE_KEY  			= "luck_draw_wx_access_token"
 const WX_TEMPLATE_SEND_SUCCESS  			= "GYJrbEJfKSFWIKcakFc03dm8F27IcBVoz8OUf2aawQI"

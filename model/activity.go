@@ -100,7 +100,7 @@ func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorI
 		filterDb = newDB.Where("type = ?",page.Type)
 	}
 
-	err := filterDb.Select("id,name,gift_id,type,from_type,join_num,attachments,join_limit_num,status").
+	err := filterDb.Select("id,name,gift_id,type,from_type,join_num,attachments,join_limit_num,status,created_at").
 			Order("id desc").
 			Find(&activities).Error
 	if err != nil {

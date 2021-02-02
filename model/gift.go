@@ -3,6 +3,7 @@ package model
 import (
 	"github.com/jinzhu/gorm"
 	"luck_draw/enums"
+	"time"
 )
 
 //奖品类型，1=红包，2=商品，3=话费
@@ -49,6 +50,8 @@ type ActivityPageFormat struct {
 	AttachmentsSli 	[]string
 	Status 			int8		 	//活动状态
 	Gift			*Gift
+	New				int
+	CreatedAt		*time.Time
 }
 
 func (Gift) TableName() string  {

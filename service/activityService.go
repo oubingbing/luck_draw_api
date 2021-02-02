@@ -73,6 +73,7 @@ func ActivityPage(db *gorm.DB,page *model.PageParam) (model.AcPage,*enums.ErrorI
 
 	config,_ := util.GetConfig()
 	domain := config["COS_DOMAIN"]
+	today := time.Now().Format(enums.DATE_DAY_FORMAT)
 	for index,item := range activities {
 		activities[index].AttachmentsSli,err = AppendDomain(domain,activities[index].Attachments)
 		if err != nil {
@@ -81,6 +82,13 @@ func ActivityPage(db *gorm.DB,page *model.PageParam) (model.AcPage,*enums.ErrorI
 		activities[index].Attachments = ""
 		if float32(item.JoinNum) > item.JoinLimitNum {
 			activities[index].JoinNum = int32(item.JoinLimitNum)
+		}
+
+		fmt.Println(activities[index].CreatedAt.Format(enums.DATE_DAY_FORMAT),today)
+		if activities[index].CreatedAt.Format(enums.DATE_DAY_FORMAT) == today {
+			activities[index].New = 1
+		}else{
+			activities[index].New = 0
 		}
 	}
 
