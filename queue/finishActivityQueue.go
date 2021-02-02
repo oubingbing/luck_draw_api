@@ -124,7 +124,7 @@ func HandlePhoneBill(activity model.Activity)  {
 			inbox.ActivityName = activity.Name
 			inbox.OrderId = item.OrderId
 			inbox.Content = fmt.Sprintf("恭喜您，在活动%v中获得%v元话费，稍后将会充值到您的账户中，请留意手机短信消息",activity.Name,avergeBill)
-			remark := inbox.Content
+			//remark := inbox.Content
 			mpStr,_ := json.Marshal(&inbox)
 			consume += int64(avergeBill)
 
