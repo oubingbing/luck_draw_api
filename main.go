@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"luck_draw/queue"
 	"luck_draw/routers"
-	"luck_draw/service"
 	"luck_draw/util"
 	"net/http"
 )
@@ -14,8 +13,6 @@ func main() {
 
 	go queue.Listen()
 	go queue.ScanActivity()
-
-	service.WxNotify()
 
 	server := &http.Server{
 		Addr:           ":8081",
