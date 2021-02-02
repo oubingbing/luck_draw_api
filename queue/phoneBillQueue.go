@@ -104,7 +104,7 @@ func HandleSendPhoneBill(inboxMessage string)  {
 				mp["activityName"] = inbox.ActivityName
 				mp["time"] = curTime
 				mp["giftName"] = fmt.Sprintf("%v元话费",inbox.Bill)
-				mp["remark"] = remark
+				mp["remark"] = "话费充值成功"
 				mpStr,_ := json.Marshal(&mp)
 				redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
 				//WxNotifyAward(id string,openid ,giftName,activityName,time,remark string)

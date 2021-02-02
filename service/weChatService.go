@@ -60,6 +60,10 @@ func WxNotifyAward(id ,openid ,giftName,activityName,time,remark string)  {
 
 //通知抽奖结果
 func WxNotifyDraw(id ,openid ,activityName,result,time,giftName,remark string)  {
+
+	fmt.Println("thing3")
+	fmt.Println(remark)
+
 	data := make(map[string]interface{})
 	data["touser"] = openid
 	data["template_id"] = enums.WX_TEMPLATE_DRAW_FINISH

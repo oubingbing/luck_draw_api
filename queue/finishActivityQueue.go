@@ -156,7 +156,7 @@ func HandlePhoneBill(activity model.Activity)  {
 				mp["result"] = "已中奖"
 				mp["time"] = curTime
 				mp["giftName"] = gift.Name
-				mp["remark"] = remark
+				mp["remark"] = fmt.Sprintf("恭喜获得%v元话费",avergeBill)
 				mpStr,_ := json.Marshal(&mp)
 				redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
 			}
@@ -221,7 +221,7 @@ func HandlePhoneBill(activity model.Activity)  {
 				mp["result"] = "已中奖"
 				mp["time"] = curTime
 				mp["giftName"] = gift.Name
-				mp["remark"] = v.Content
+				mp["remark"] = fmt.Sprintf("恭喜获得%v元话费",v.Bill)
 				mpStr,_ := json.Marshal(&mp)
 				redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
 			}
@@ -430,7 +430,7 @@ func HandleGift(activity model.Activity)  {
 						mp["result"] = "已中奖"
 						mp["time"] = curTime
 						mp["giftName"] = gift.Name
-						mp["remark"] = user[key].Content
+						mp["remark"] = "恭喜中奖啦"
 						mpStr,_ := json.Marshal(&mp)
 						redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
 						//service.WxNotifyDraw(activity.ID,userInfo.OpenId ,activity.Name,"已中奖",curTime,gift.Name,user[key].Content)
@@ -472,7 +472,7 @@ func HandleGift(activity model.Activity)  {
 			mp["result"] = "未中奖"
 			mp["time"] = curTime
 			mp["giftName"] = gift.Name
-			mp["remark"] = loseRemark
+			mp["remark"] = "很遗憾未中奖"
 			mpStr,_ := json.Marshal(&mp)
 			redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
 			//service.WxNotifyDraw(activity.ID,userInfo.OpenId ,activity.Name,"未中奖",curTime,gift.Name,"很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！")
