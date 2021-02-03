@@ -92,6 +92,29 @@ func ActivityPage(db *gorm.DB,page *model.PageParam) (model.AcPage,*enums.ErrorI
 		}
 	}
 
+	//获取置顶
+	if int(page.Type) != int(0) {
+		var ctx = context.Background()
+		redis := util.NewRedis()
+		defer func() {
+			redis.Client.Close()
+			db.Close()
+		}()
+		cmd := redis.Client.Get(ctx,model.TOP_ACTIVITY)
+		if cmd.Err() == nil {
+			if len(cmd.Val()) > 0 {
+				//转化数据
+				tops := []model.ActivityPageFormat{}
+				if json.Unmarshal([]byte(cmd.Val()),&tops) != nil {
+					//记录错误
+				}
+				fmt.Println(tops)
+			}
+		}else{
+			//记录错误
+		}
+	}
+
 	return activities,nil
 }
 

@@ -52,6 +52,8 @@ type ActivityPageFormat struct {
 	Gift			*Gift
 	New				int
 	CreatedAt		*time.Time
+	IsTop			int8
+	Number 			string
 }
 
 func (Gift) TableName() string  {

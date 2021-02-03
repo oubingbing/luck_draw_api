@@ -82,6 +82,10 @@ func HandlePhoneBill(activity model.Activity)  {
 		return
 	}
 
+	if len(joinLogSli) <= 0 {
+		return
+	}
+
 	//将活动变更为已完成
 	ac := &model.Activity{}
 	updateActivity := make(map[string]interface{})
@@ -283,6 +287,10 @@ func HandleGift(activity model.Activity)  {
 	joinLogSli,err := joinLog.GetJoinLogByActivityId(db,activity.ID)
 	if err != nil {
 		util.ErrDetail(enums.ACTIVITY_JOIN_LOG_QUERY_ERR,"取出需要完结的活动参加记录时发生错误",err.Error())
+		return
+	}
+
+	if len(joinLogSli) <= 0 {
 		return
 	}
 

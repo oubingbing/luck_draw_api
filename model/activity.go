@@ -2,7 +2,6 @@ package model
 
 import (
 	"errors"
-	"fmt"
 	"github.com/jinzhu/gorm"
 	"luck_draw/enums"
 	"time"
@@ -51,6 +50,7 @@ const (
 
 //假用户redis key
 const FAKER_USER_KEY = "luck_draw_faker_activity"
+const TOP_ACTIVITY 	 = "luck_draw_top_activity"
 
 type Activity struct {
 	gorm.Model
@@ -100,11 +100,10 @@ func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorI
 		filterDb = newDB.Where("type = ?",page.Type)
 	}
 
-	err := filterDb.Select("id,name,gift_id,type,from_type,join_num,attachments,join_limit_num,status,created_at").
+	err := filterDb.Select("id,name,is_top,number,gift_id,type,from_type,join_num,attachments,join_limit_num,status,created_at").
 			Order("id desc").
 			Find(&activities).Error
 	if err != nil {
-		fmt.Printf("数据错误：%v\n",err)
 		return nil,&enums.ErrorInfo{pageErr,enums.ACTIVITY_PAGE_ERR}
 	}
 
@@ -115,7 +114,7 @@ func (activity *Activity) Detail(db *gorm.DB,id string) (*enums.ActivityDetailFo
 	activityDetail := &enums.ActivityDetailFormat{}
 	err := db.Table(activity.TableName()).
 		Where("deleted_at is null").
-		Select("id,name,gift_id,status,type,from_type,open_ad,join_num,limit_join,join_limit_num,des,attachments,share_title,share_image,created_at").
+		Select("id,name,gift_id,number,status,type,from_type,open_ad,join_num,limit_join,join_limit_num,des,attachments,share_title,share_image,created_at").
 		Where("id = ?",id).
 		First(activityDetail).Error
 	return activityDetail,db.RecordNotFound(),err
