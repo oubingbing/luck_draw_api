@@ -13,8 +13,9 @@ type PageParam struct {
 	PageNum 		int 		`form:"page_num" json:"page_num" binding:"required"`
 	PageSize 		int  		`form:"page_size" json:"page_size" binding:"required"`
 	OrderBY 		string 	 	`form:"order_by" json:"order_by" binding:"required"`
-	Sort			string 		`form:"sort" json:"sort" binding:"required"` 							//分享图片
-	Type			int 		`form:"type" json:"type"` 							//分享图片
+	Sort			string 		`form:"sort" json:"sort" binding:"required"` 				//分享图片
+	Type			int 		`form:"type" json:"type"` 									//分享图片
+	History			int 		`form:"history" json:"history"` 							//分享图片
 }
 
 var getCnfErr error = errors.New("配置读取失败")

@@ -90,11 +90,19 @@ func (activity *Activity)Store(db *gorm.DB) (int64,error) {
 }
 
 func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorInfo) {
+	var status int
+	if page.History == 0 {
+		status = ACTIVITY_STATSUS_RUNNING
+	}else{
+		status = ACTIVITY_STATSUS_FINISH
+	}
+
+
 	var activities AcPage
 	newDB :=  Page(db,activity.TableName(),page).
 			Where("deleted_at is null").
 			Where("is_top = ?",0).
-			Where("status in (?)",[]int8{ACTIVITY_STATSUS_RUNNING,ACTIVITY_STATSUS_FINISH})
+			Where("status = ?",status)
 
 	filterDb := newDB
 	if int(page.Type) != int(0) {

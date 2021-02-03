@@ -39,6 +39,10 @@ func InitRouter() *gin.Engine {
 	{
 		//用户信息
 		auth.GET("/user/info",controller.GetUserInfo)
+
+		//检测用户登录
+		auth.GET("/user/check_login",controller.CheckLogin)
+
 		//用户手机号
 		auth.POST("/user/get_phone",controller.GetUserPhone)
 

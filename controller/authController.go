@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -85,6 +86,11 @@ func GetUserInfo(ctx *gin.Context)  {
 	if err != nil {
 		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
 		return
+	}
+
+	decoded, isBase64 := base64.StdEncoding.DecodeString(user.NickName)
+	if isBase64 == nil {
+		user.NickName = string(decoded)
 	}
 
 	data := make(map[string]interface{})

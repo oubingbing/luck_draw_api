@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/jinzhu/gorm"
@@ -25,15 +26,21 @@ func UserLogin(db *gorm.DB, user *model.User) (string,*enums.ErrorInfo) {
 		return "",&enums.ErrorInfo{Code:enums.AUTH_USER_QUERY_ERR,Err:enums.LoginQueryUserErr}
 	}
 
+	nicknameByte := []byte(user.NickName)
+	nicknameEncode := base64.StdEncoding.EncodeToString(nicknameByte)
+	user.NickName = nicknameEncode
+
 	var id uint
 	openId := user.OpenId
 	if gorm.IsRecordNotFoundError(queryErr) {
 		//新增用户
 		effect,saveErr := user.Store(db)
 		if saveErr != nil {
+			util.ErrDetail(enums.AUTH_USER_SAVE_ERR,"新增用户异常",saveErr.Error())
 			return "",&enums.ErrorInfo{Code:enums.AUTH_USER_SAVE_ERR,Err:enums.LoginSaveUserDbErr}
 		}
 		if effect <= 0 {
+			util.ErrDetail(enums.AUTH_USER_SAVE_ERR,"新增用户异常，保存失败",effect)
 			return "",&enums.ErrorInfo{Code:enums.AUTH_USER_SAVE_ERR,Err:enums.LoginInsertUserErr}
 		}
 		id = user.ID

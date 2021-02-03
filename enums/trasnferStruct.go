@@ -49,6 +49,7 @@ type ActivityDetailFormat struct {
 	CreatedAt 		time.Time
 	Gift      		*GiftDetail
 	ActivityLog		map[string]interface{}
+	Number 			string
 }
 
 type GiftParam struct {

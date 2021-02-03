@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -425,6 +426,11 @@ func WinMember(db *gorm.DB,activityId interface{},page *model.PageParam) (model.
 
 	for j,item := range list {
 		newName := ""
+		encodeName, isBase4 := base64.StdEncoding.DecodeString(item.NickName)
+		if isBase4 == nil {
+			item.NickName = string(encodeName)
+		}
+
 		if len(item.NickName) > 0 {
 			str := []rune(item.NickName)
 			if len(str) == 1 {
