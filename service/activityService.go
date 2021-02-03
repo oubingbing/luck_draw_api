@@ -93,7 +93,8 @@ func ActivityPage(db *gorm.DB,page *model.PageParam) (model.AcPage,*enums.ErrorI
 	}
 
 	//获取置顶
-	if int(page.Type) != int(0) {
+	/*tops := []model.ActivityPageFormat{}
+	if int(page.Type) == int(0) && page.PageNum == 1 {
 		var ctx = context.Background()
 		redis := util.NewRedis()
 		defer func() {
@@ -104,16 +105,17 @@ func ActivityPage(db *gorm.DB,page *model.PageParam) (model.AcPage,*enums.ErrorI
 		if cmd.Err() == nil {
 			if len(cmd.Val()) > 0 {
 				//转化数据
-				tops := []model.ActivityPageFormat{}
 				if json.Unmarshal([]byte(cmd.Val()),&tops) != nil {
 					//记录错误
 				}
-				fmt.Println(tops)
 			}
 		}else{
 			//记录错误
 		}
 	}
+	if len(tops) > 0 {
+		return append(tops,activities...),nil
+	}*/
 
 	return activities,nil
 }
