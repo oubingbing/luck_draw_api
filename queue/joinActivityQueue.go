@@ -172,7 +172,7 @@ func ListenWxNotify(wg *sync.WaitGroup)  {
 
 func Listen()  {
 	var wg sync.WaitGroup
-	wg.Add(1)
+	wg.Add(3)
 	go ListenInbox(&wg)
 	go ListenAttemptJoin(&wg)
 	go ListenPhoneBill(&wg)
