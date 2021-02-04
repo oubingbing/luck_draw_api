@@ -16,6 +16,13 @@ const WX_ACCESS_TOKEN_CACHE_KEY  			= "luck_draw_wx_access_token"
 const WX_TEMPLATE_SEND_SUCCESS  			= "GYJrbEJfKSFWIKcakFc03dm8F27IcBVoz8OUf2aawQI"
 const WX_TEMPLATE_DRAW_FINISH  				= "HHOHnkh0UmYr-bifPvf1o0LWUHpBynwbxLbfPVMDQoA"
 
+//广告类型
+const (
+	AD_TYPE_HOME 			= 1	//首页
+	AD_TYPE_HISTORY 		= 2	//历史页
+	AD_TYPE_DETAIL 			= 3	//详情页
+)
+
 //业务不相关错误
 const (
 	SUCCESS					= 0

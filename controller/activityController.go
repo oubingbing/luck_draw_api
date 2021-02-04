@@ -97,8 +97,7 @@ func GetDetail(ctx *gin.Context)  {
 		return
 	}
 
-	activity.Ad = "adunit-7b7dddf50e628cbd"
-
+	activity.Ad = service.GetAd(enums.AD_TYPE_DETAIL)
 	util.ResponseJson(ctx,enums.SUCCESS,"",activity)
 	return
 }

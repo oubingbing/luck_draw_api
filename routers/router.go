@@ -27,6 +27,9 @@ func InitRouter() *gin.Engine {
 		//首页广告
 		notAuth.GET("/ad/home",controller.AdHome)
 
+		//首页开奖历史广告
+		notAuth.GET("/ad/history",controller.AdHome)
+
 		//活动类型
 		notAuth.GET("/activity/category",controller.ActivityType)
 

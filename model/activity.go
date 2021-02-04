@@ -97,7 +97,6 @@ func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorI
 		status = ACTIVITY_STATSUS_FINISH
 	}
 
-
 	var activities AcPage
 	newDB :=  Page(db,activity.TableName(),page).
 			Where("deleted_at is null").
