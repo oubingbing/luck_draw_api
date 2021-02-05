@@ -21,6 +21,8 @@ const (
 	AD_TYPE_HOME 			= 1	//首页
 	AD_TYPE_HISTORY 		= 2	//历史页
 	AD_TYPE_DETAIL 			= 3	//详情页
+	AD_TYPE_DETAIL_CP 		= 4	//详情页插屏
+	AD_TYPE_INBOX	 		= 5	//消息盒子页插屏
 )
 
 //业务不相关错误

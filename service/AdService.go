@@ -45,6 +45,28 @@ func GetAd(adType int) string {
 				"adunit-8b42b7319d507a66",
 			}
 			break
+		case 4:
+			adList = []string{
+				"adunit-bec8cc6a4abbcbfd",
+				"adunit-a0068ea8277c26b0",
+				"adunit-3d97e32f8de4dd08",
+				"adunit-3c37fce804325aed",
+				"adunit-993f26f47a7e6644",
+				"adunit-0a893b23673d132b",
+				"adunit-f11b0acff4cefdbf",
+				"adunit-3926f2288b4c25d5",
+			}
+			break
+		case 5:
+			adList = []string{
+				"adunit-aed442de4ea3f8dc",
+				"adunit-fb267a11ddcb8050",
+				"adunit-0e3cc57bd58dcaef",
+				"adunit-a69e292150f0d0ca",
+				"adunit-08366384ec43d4c9",
+				"adunit-63fe4678f9189b5a",
+			}
+			break
 		default:
 			adList = []string{
 				"adunit-a3f14ff6cd7ca3d7",
