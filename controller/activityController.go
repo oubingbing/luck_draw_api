@@ -240,3 +240,7 @@ func GetWins(ctx *gin.Context)  {
 	util.ResponseJson(ctx,enums.SUCCESS,"ok",result)
 	return
 }
+
+func ShareActivity(ctx *gin.Context)  {
+
+}

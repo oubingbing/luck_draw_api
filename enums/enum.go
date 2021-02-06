@@ -7,6 +7,7 @@ const ACTIVITY_HANDLE_PHONE_BILL_QUEUE		= "luck_handle_phone_bill_queue"  	 	//�
 const ACTIVITY_HANDLE_REA_PAK_QUEUE			= "luck_handle_red_pak_queue"  	 		//发送红包队列
 const ACTIVITY_HANDLE_GIFT_QUEUE			= "luck_handle_gift_queue"  	 		//抽礼品队列
 const ACTIVITY_QUEUE_TRY					= "luck_activity_queue_try"  			//参加活动重试队列
+const ACTIVITY_USER_COUNT					= "luck_activity_user_count"  			//参加活动重试队列
 const SOCKET_USER_TOKEN  					= "luck_api_socket_token"	 			//用户socket token
 const DATE_FORMAT  							= "2006-01-02 15:04:05"
 const DATE_ONLY_FORMAT  					= "2006-01-02 00:00:00"

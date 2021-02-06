@@ -96,6 +96,9 @@ func InitRouter() *gin.Engine {
 
 		//未读消息盒子
 		auth.GET("/inbox/un_read",controller.GetUnReadInbox)
+
+		//未读消息盒子
+		auth.POST("/activity/share",controller.ShareActivity)
 	}
 
 	return router
