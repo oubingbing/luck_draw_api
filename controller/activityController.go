@@ -127,6 +127,8 @@ func Join(ctx *gin.Context)  {
 		return
 	}
 
+	fmt.Println("ssssss")
+
 	logId,err := service.ActivityJoin(db,id.(string),int64(userId))
 	if err != nil {
 		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)

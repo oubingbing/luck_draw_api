@@ -12,6 +12,7 @@ var log = logrus.New()
 func Info(info string)  {
 	go func() {
 		file, err := getFile()
+		log.Info(info)
 		if err == nil {
 			log.Out = file
 		} else {
@@ -20,19 +21,18 @@ func Info(info string)  {
 
 		defer file.Close()
 
-		log.Info(info)
 	}()
 }
 
 func Error(info string)  {
 	go func() {
 		file,err := getFile()
+		defer file.Close()
 		if err == nil {
 			log.Out = file
 		} else {
 			log.Info("Failed to log to file, using default stderr")
 		}
-		defer file.Close()
 
 		log.Error(info)
 	}()

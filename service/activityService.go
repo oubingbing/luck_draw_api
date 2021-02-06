@@ -232,17 +232,18 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 
 		//ACTIVITY_USER_COUNT
 		//加入队列
-		redisCount := 0
+		/*redisCount := 0
 		var ctx = context.Background()
 		redis := util.NewRedis()
 		curtTime := time.Now().Format(enums.DATE_DAY_FORMAT)
 		key := enums.ACTIVITY_USER_COUNT+"_"+string(userId)+"_"+curtTime
 		redisResult := redis.Client.Get(ctx,key)
 		if redisResult.Err() != nil {
-
+			fmt.Println(redisResult.Err())
 		}
 
 		if len(redisResult.Val()) >= 0 {
+			fmt.Println("数据存在")
 			//redisCount = (redisResult.Val()).(int)
 		}
 
@@ -250,7 +251,7 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 		if hadJoin + int64(redisCount) > 6 {
 			//已经超过限制
 			return 0,&enums.ErrorInfo{enums.ActivityJoinLimit,enums.ACTIVITY_JOIN_LIMIT_TIME}
-		}
+		}*/
 	}
 
 	//悲观锁

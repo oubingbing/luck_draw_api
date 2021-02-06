@@ -190,7 +190,7 @@ func Pay()  {
 
 	data := make(map[string]interface{})
 	data["mch_appid"] = "wxa0d7aa1607c5ac21"
-	data["mchid"] = "1536837121"
+	data["mchid"] = "1254223701"
 	data["nonce_str"] = "qweqweqweqwe"
 	data["partner_trade_no"] = "10000098201411111234567890"
 	data["openid"] = "oc-wc48UGe_dVNqmAPJjIQAEw5-w"
@@ -210,7 +210,7 @@ func Pay()  {
 	}
 
 	//拼接api秘钥
-	stringSignTemp := fmt.Sprintf("%v&key=v1dqvxnDKn3AHzw5HeV8G7EHZrESxiY6",dataStr)
+	stringSignTemp := fmt.Sprintf("%v&key=aY5fa4VPhDGWa1Qu19NuCVeBzChKIEWZ",dataStr)
 
 	fmt.Printf("拼接key：%v\n",stringSignTemp)
 
@@ -267,14 +267,11 @@ func Pay()  {
 	}*/
 
 	byteData := `
-
-
-
 <xml>
 
 <mch_appid>wxa0d7aa1607c5ac21</mch_appid>
 
-<mchid>1536837121</mchid>
+<mchid>1254223701</mchid>
 
 <nonce_str>qweqweqweqwe</nonce_str>
 
@@ -284,12 +281,11 @@ func Pay()  {
 
 <check_name>NO_CHECK</check_name>
 
-
 <amount>100</amount>
 
 <desc>抽奖</desc>
 
-<sign>6CFCDFD35CBC3BB4D66D914F86654BBF</sign>
+<sign>BAF6451A7A3401D8B102E4C75226CC53</sign>
 
 </xml>
 
@@ -297,8 +293,8 @@ func Pay()  {
 
 	url := "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers"
 
-	var wechatPayCert = "/www/server/wechat-pay/apiclient_cert.pem"
-	var wechatPayKey = "/www/server/wechat-pay/apiclient_key.pem"
+	var wechatPayCert = "C:/Users/hasee/Downloads/WXCertUtil/cert/new/apiclient_cert.pem"
+	var wechatPayKey = "C:/Users/hasee/Downloads/WXCertUtil/cert/new/apiclient_key.pem"
 	//var tr *http.Transport
 	// 微信提供的API证书,证书和证书密钥 .pem格式
 	certs, err := tls.LoadX509KeyPair(wechatPayCert, wechatPayKey)
