@@ -293,8 +293,8 @@ func Pay()  {
 
 	url := "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers"
 
-	var wechatPayCert = "C:/Users/hasee/Downloads/WXCertUtil/cert/new/apiclient_cert.pem"
-	var wechatPayKey = "C:/Users/hasee/Downloads/WXCertUtil/cert/new/apiclient_key.pem"
+	var wechatPayCert = "/www/server/wechat-pay/new/apiclient_cert.pem"
+	var wechatPayKey = "/www/server/wechat-pay/new/apiclient_key.pem"
 	//var tr *http.Transport
 	// 微信提供的API证书,证书和证书密钥 .pem格式
 	certs, err := tls.LoadX509KeyPair(wechatPayCert, wechatPayKey)
