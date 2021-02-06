@@ -155,6 +155,23 @@ func ListenPhoneBill(wg *sync.WaitGroup)  {
 }
 
 /**
+ * 监听发送红包队列
+ */
+func ListenRedPackage(wg *sync.WaitGroup)  {
+	redis := util.NewRedis()
+	t := time.Second * 59
+
+	queue := enums.ACTIVITY_HANDLE_REA_PAK_QUEUE
+	redis.OnQueue(wg,queue,t, func(result *redis2.StringSliceCmd, e error) {
+		if len(result.Val()) > 0 {
+			util.Info(fmt.Sprintf("取出需要发送红包的数据：%v",result.Val()[1]));
+			HandleRedPackage(result.Val()[1])
+			time.Sleep(time.Millisecond*50)
+		}
+	})
+}
+
+/**
  * 监听发送微信模板消息
  */
 func ListenWxNotify(wg *sync.WaitGroup)  {
@@ -177,6 +194,7 @@ func Listen()  {
 	go ListenAttemptJoin(&wg)
 	go ListenPhoneBill(&wg)
 	go ListenWxNotify(&wg)
+	go ListenRedPackage(&wg)
 	wg.Wait()
 	//程序退出，需要通知开发人员
 }

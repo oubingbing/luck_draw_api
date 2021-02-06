@@ -187,7 +187,7 @@ func RandChar(size int) string {
 	return s.String()
 }
 
-func Pay(weChatPay WeChatPay)  {
+func Pay(weChatPay WeChatPay) string {
 	nano := fmt.Sprintf("%v",time.Now().UnixNano())
 	config,_ := util.GetConfig()
 
@@ -230,7 +230,7 @@ func Pay(weChatPay WeChatPay)  {
 	xmlByte,err:=xml.Marshal(weChatPay)
 	if err != nil {
 		util.Error(fmt.Sprintf("解析xml数据出错：%v",err.Error()))
-		return
+		return "FAIL"
 	}
 
 	url := "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers"
@@ -242,7 +242,7 @@ func Pay(weChatPay WeChatPay)  {
 	certs, err := tls.LoadX509KeyPair(wechatPayCert, wechatPayKey)
 	if err != nil {
 		util.Error(fmt.Sprintf("certs load err:", err.Error()))
-		return
+		return "FAIL"
 	} else {
 		// 微信支付HTTPS服务器证书的根证书  .pem格式
 		tr := &http.Transport{
@@ -257,7 +257,7 @@ func Pay(weChatPay WeChatPay)  {
 		req, createErr := http.NewRequest("POST", url, bytes.NewBuffer(xmlByte))
 		if createErr != nil {
 			util.Error(fmt.Sprintf("创建失败:%v\n",createErr.Error()))
-			return
+			return "FAIL"
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -265,13 +265,13 @@ func Pay(weChatPay WeChatPay)  {
 		resp, err := client.Do(req)
 		if err != nil {
 			util.Error(fmt.Sprintf("微信支付请求失败：%v",err.Error()))
-			return
+			return "FAIL"
 		}
 
 		body,readErr := ioutil.ReadAll(resp.Body)
 		if readErr != nil {
 			util.Error(fmt.Sprintf("读取数据流失败：%v",readErr.Error()))
-			return
+			return "FAIL"
 		}
 
 		util.Info(fmt.Sprintf("请求微信支付结果：%v",string(body)))
@@ -280,8 +280,9 @@ func Pay(weChatPay WeChatPay)  {
 		xml.Unmarshal(body,payResult)
 		if payResult.ResultCode == "FAIL" {
 			fmt.Println("支付失败")
+			return "FAIL"
 		}
 
-		fmt.Println(payResult)
+		return "SUCCESS"
 	}
 }

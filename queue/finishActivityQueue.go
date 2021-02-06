@@ -261,8 +261,193 @@ func HandleReaPackage(activity model.Activity)  {
 		return
 	}
 
+	db,connectErr := model.Connect()
+	if connectErr != nil {
+		util.ErrDetail(connectErr.Code,"完结活动时数据库连接错误",connectErr.Err)
+		return
+	}
+
 	redis := util.NewRedis()
-	defer redis.Client.Close()
+	defer func() {
+		redis.Client.Close()
+		db.Close()
+	}()
+
+	joinLog := &model.JoinLog{}
+	joinLogSli,err := joinLog.GetJoinLogByActivityId(db,activity.ID)
+	if err != nil {
+		util.ErrDetail(enums.ACTIVITY_JOIN_LOG_QUERY_ERR,"取出需要完结的活动参加记录时发生错误",err.Error())
+		return
+	}
+
+	if len(joinLogSli) <= 0 {
+		return
+	}
+
+	//将活动变更为已完成
+	ac := &model.Activity{}
+	updateActivity := make(map[string]interface{})
+	updateActivity["status"] = model.ACTIVITY_STATSUS_FINISH
+	updateAcErr := ac.Update(db,activity.ID,updateActivity)
+	if updateAcErr != nil {
+		util.ErrDetail(enums.ACTIVITY_FINDISH_DB_ERR,"活动变更为已完成数据库出错",activity.ID)
+		return
+	}
+
+	//查找gift
+	gift,giftErr := service.FirstGiftById(db,activity.GiftId)
+	if giftErr != nil {
+		util.ErrDetail(giftErr.Code,"取出需要完结的活动奖品时发生错误",giftErr.Err.Error())
+		return
+	}
+
+	curTime := time.Now().Format(enums.DATE_FORMAT)
+	var ctx = context.Background()
+	var consume int64 = 0
+	if activity.DrawType == model.ACTIVITY_DRAW_TYPE_AVERAGE {
+		//平均，人人有份
+		averge := gift.Num / float32(activity.JoinNum)
+		//话费的区间
+		avergeBill := float32(1) //最低金额
+		if averge >= 1 {
+			avergeBill = averge
+		}
+
+		for _,item := range joinLogSli {
+			inbox := model.InboxMessage{}
+			inbox.UserId = item.UserId
+			inbox.Bill = float64(avergeBill)
+			inbox.JoinLogId = int64(item.ID)
+			inbox.ObjectId = item.ActivityId
+			inbox.ActivityName = activity.Name
+			inbox.OrderId = item.OrderId
+			inbox.Content = fmt.Sprintf("恭喜您，在活动%v中获得%v元红包，稍后将会发放到您的微信账户中，请留意微信消息",activity.Name,avergeBill)
+			//remark := inbox.Content
+			mpStr,_ := json.Marshal(&inbox)
+			consume += int64(avergeBill)
+
+			//推送到队列
+			intCmd := redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
+			intCmd = redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_PHONE_BILL_QUEUE,string(mpStr))
+			if intCmd.Err() != nil {
+				util.ErrDetail(enums.ACTIVITY_PUSH_BILL_QUEUE_ERR,fmt.Sprintf("推送到红包发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,item.UserId),intCmd.Err().Error())
+			}
+
+			joinLog := &model.JoinLog{}
+			update := make(map[string]interface{})
+			update["remark"] = fmt.Sprintf("恭喜获得%v元红包",avergeBill)
+			update["status"] = model.JOIN_LOG_STATUS_WIN
+			update["num"]    = inbox.Bill
+			updateErr := joinLog.Update(db,uint(inbox.JoinLogId),update)
+			if updateErr != nil {
+				util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())
+			}
+
+			userInfo:= &model.User{}
+			findUserErr := userInfo.FindById(db,inbox.UserId)
+			if findUserErr == nil {
+				mp := make(map[string]string)
+				mp["type"] = "d"
+				mp["id"] = fmt.Sprintf("%v",activity.ID)
+				mp["openid"] = userInfo.OpenId
+				mp["activityName"] = activity.Name
+				mp["result"] = "已中奖"
+				mp["time"] = curTime
+				mp["giftName"] = gift.Name
+				mp["remark"] = fmt.Sprintf("恭喜获得%v元红包",avergeBill)
+				mpStr,_ := json.Marshal(&mp)
+				redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
+			}
+		}
+		//更新所有的
+	}else{
+		//拼手气,人人有份
+		var avergeBill int64 = 1 //需要送的话费
+		user := make(map[int]*model.InboxMessage)
+		for index,item := range joinLogSli {
+			inbox := model.InboxMessage{}
+			inbox.UserId = item.UserId
+			inbox.JoinLogId = int64(item.ID)
+			inbox.Bill = float64(avergeBill)
+			inbox.ObjectId = item.ActivityId
+			inbox.ActivityName = activity.Name
+			inbox.OrderId = item.OrderId
+			inbox.Content = ""
+			consume += avergeBill
+			user[index] = &inbox
+		}
+
+		num := len(joinLogSli) //中奖人数
+		leftAmount := gift.Num - float32(num)
+		unit := float32(0.1)
+		if leftAmount >= 0.1 {
+			//循环扣减,直到奖金池为0
+			seed := 1
+			for  {
+				if leftAmount <= 0 {
+					break
+				}
+				rand.Seed(time.Now().UnixNano()+int64(seed))
+				key := rand.Intn(num)
+				//抽取一个中奖用户
+				_,ok := user[key]
+				if ok {
+					user[key].Bill += float64(unit)
+					leftAmount = leftAmount - unit
+					consume += int64(unit)
+				}
+			}
+		}
+
+		for _,v := range user {
+			v.Content = fmt.Sprintf("恭喜您，在%v中获得%v元红包，后将会发放到您的微信账户中，请留意微信消息",activity.Name,v.Bill)
+			mpStr,_ := json.Marshal(&v)
+			//推送到队列
+			intCmd := redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
+			intCmd = redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_REA_PAK_QUEUE,string(mpStr))
+			if intCmd.Err() != nil {
+				util.ErrDetail(enums.ACTIVITY_PUSH_BILL_QUEUE_ERR,fmt.Sprintf("推送到红包发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,v.UserId),intCmd.Err().Error())
+			}
+
+			userInfo:= &model.User{}
+			findUserErr := userInfo.FindById(db,v.UserId)
+			if findUserErr == nil {
+				mp := make(map[string]string)
+				mp["type"] = "d"
+				mp["id"] = fmt.Sprintf("%v",activity.ID)
+				mp["openid"] = userInfo.OpenId
+				mp["activityName"] = activity.Name
+				mp["result"] = "已中奖"
+				mp["time"] = curTime
+				mp["giftName"] = gift.Name
+				mp["remark"] = fmt.Sprintf("恭喜获得%v元红包",v.Bill)
+				mpStr,_ := json.Marshal(&mp)
+				redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
+			}
+
+			joinLog := &model.JoinLog{}
+			update := make(map[string]interface{})
+			update["remark"] = fmt.Sprintf("恭喜获得%v元红包",v.Bill)
+			update["status"] = model.JOIN_LOG_STATUS_WIN
+			update["num"]    = v.Bill
+			updateErr := joinLog.Update(db,uint(v.JoinLogId),update)
+			if updateErr != nil {
+				util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())
+			}
+		}
+
+	}
+
+	//还有一种是真用户只有1元，假用户可以中更多
+
+	//更新活动实际消耗奖品数量
+	updateConsueme := make(map[string]interface{})
+	updateConsueme["consume"] = consume
+	updateConsumeErr := ac.Update(db,activity.ID,updateConsueme)
+	if updateConsumeErr != nil {
+		util.ErrDetail(enums.ACTIVITY_UPDATE_CONSUME_DB_ERR,"活动更新实际消耗奖品数量出错",activity.ID)
+		return
+	}
 }
 
 //处理礼品
