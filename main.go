@@ -11,14 +11,11 @@ import (
 
 func main() {
 	router:= routers.InitRouter()
+	orderNo := service.RandChar(32)
 	pay := service.WeChatPay{
 		XMLName:        xml.Name{},
-		MchAppid:       "wxa0d7aa1607c5ac21",
-		Mchid:          "1254223701",
-		NonceStr:       "qweqweqweqwe",
-		PartnerTradeNo: "10000098201411111234567890",
+		PartnerTradeNo: orderNo,
 		Openid:         "oc-wc48UGe_dVNqmAPJjIQAEw5-w",
-		CheckName:      "NO_CHECK",
 		Amount:         10,
 		Sign:           "",
 		Desc:           "抽奖",

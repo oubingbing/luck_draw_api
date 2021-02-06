@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"luck_draw/enums"
 	"luck_draw/util"
+	"math/rand"
 	"net/http"
 	"sort"
 	"strings"
@@ -176,7 +177,25 @@ func KeySort(data map[string]interface{}) []string {
 	return keys
 }
 
+const char = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+func RandChar(size int) string {
+	rand.NewSource(time.Now().UnixNano()) // 产生随机种子
+	var s bytes.Buffer
+	for i := 0; i < size; i ++ {
+		s.WriteByte(char[rand.Int63() % int64(len(char))])
+	}
+	return s.String()
+}
+
 func Pay(weChatPay WeChatPay)  {
+	nano := fmt.Sprintf("%v",time.Now().UnixNano())
+	config,_ := util.GetConfig()
+
+	weChatPay.MchAppid = config["WE_CHAT_APP_ID"]
+	weChatPay.Mchid = config["WE_CHAT_MCHID"]
+	weChatPay.CheckName = "NO_CHECK"
+	weChatPay.NonceStr = nano
+
 	data := make(map[string]interface{})
 	data["mch_appid"] 			= weChatPay.MchAppid
 	data["mchid"] 				= weChatPay.Mchid
@@ -197,8 +216,6 @@ func Pay(weChatPay WeChatPay)  {
 			dataStr += fmt.Sprintf("%v=%v&",key,data[key])
 		}
 	}
-
-	config,_ := util.GetConfig()
 
 	//拼接api秘钥
 	stringSignTemp := dataStr+"&key="+config["WE_CHAT_PAY_API_KEY"]
@@ -264,20 +281,7 @@ func Pay(weChatPay WeChatPay)  {
 		if payResult.ResultCode == "FAIL" {
 			fmt.Println("支付失败")
 		}
-		fmt.Println(payResult)
 
-		/**
-		<xml>
-		<return_code><![CDATA[SUCCESS]]></return_code>
-		<return_msg><![CDATA[]]></return_msg>
-		<mch_appid><![CDATA[wxa0d7aa1607c5ac21]]></mch_appid>
-		<mchid><![CDATA[1254223701]]></mchid>
-		<nonce_str><![CDATA[qweqweqweqwe]]></nonce_str>
-		<result_code><![CDATA[SUCCESS]]></result_code>
-		<partner_trade_no><![CDATA[10000098201411111234567890]]></partner_trade_no>
-		<payment_no><![CDATA[10100103444012102066101219418233]]></payment_no>
-		<payment_time><![CDATA[2021-02-06 22:05:12]]></payment_time>
-		</xml>
-		 */
+		fmt.Println(payResult)
 	}
 }
