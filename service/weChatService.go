@@ -10,7 +10,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"luck_draw/enums"
 	"luck_draw/util"
 	"net/http"
@@ -141,40 +140,31 @@ func RequestWxAccessToken() (string,error) {
 	return data["access_token"].(string),err
 }
 
-type XmlData struct {
-	MchAppid 		string         `xml:"mch_appid,attr"`
-	Mchid     		string         `xml:"mchid,attr"`
-	NonceStr     	string         `xml:"nonce_str,attr"`
-	Sign     		string         `xml:"sign,attr"`
-	PartnerTradeNo  string         `xml:"partner_trade_no,attr"`
-	Openid     		string         `xml:"openid,attr"`
-	CheckName     	string         `xml:"check_name,attr"`
-	Amount     		int            `xml:"amount,attr"`
-	Desc     		string         `xml:"desc,attr"`
+type WeChatPay struct {
+	XMLName   		xml.Name `xml:"xml"`
+	MchAppid        string   `xml:"mch_appid"`
+	Mchid 			string   `xml:"mchid"`
+	NonceStr  		string   `xml:"nonce_str"`
+	PartnerTradeNo  string   `xml:"partner_trade_no"`
+	Openid  		string   `xml:"openid"`
+	CheckName  		string   `xml:"check_name"`
+	Amount       	int		 `xml:"amount"`
+	Sign       		string	 `xml:"sign"`
+	Desc 			string 	 `xml:"desc"`
 }
 
-
-type xmldas struct {
-	XMLName  xml.Name       		`xml:"xml"`
-	MchAppid 		string         `xml:"mch_appid,attr"`
-	Mchid     		string         `xml:"mchid,attr"`
-	NonceStr     	string         `xml:"nonce_str,attr"`
-	Sign     		string         `xml:"sign,attr"`
-	PartnerTradeNo  string         `xml:"partner_trade_no,attr"`
-	Openid     		string         `xml:"openid,attr"`
-	CheckName     	string         `xml:"check_name,attr"`
-	Amount     		int            `xml:"amount,attr"`
-	Desc     		string         `xml:"desc,attr"`
-}
-
-type xmlsource struct {
-	Path  string `xml:"path,attr"`
-	Param string `xml:"param,attr"`
-}
-
-type xmldestination struct {
-	Path  string `xml:"path,attr"`
-	Param string `xml:"param,attr"`
+type WeChatPayResult struct {
+	XMLName   		xml.Name `xml:"xml"`
+	ReturnCode 			string 	 `xml:"return_code"`
+	ReturnMsg 			string 	 `xml:"return_msg"`
+	MchAppid 			string 	 `xml:"mch_appid"`
+	Mchid 				string 	 `xml:"mchid"`
+	DeviceInfo 			string 	 `xml:"device_info"`
+	NonceStr 			string 	 `xml:"nonce_str"`
+	ResultCode 			string 	 `xml:"result_code"`
+	PartnerTradeNo 		string 	 `xml:"partner_trade_no"`
+	PaymentNo 			string 	 `xml:"payment_no"`
+	PaymentTime 		string 	 `xml:"payment_time"`
 }
 
 func KeySort(data map[string]interface{}) []string {
@@ -186,17 +176,16 @@ func KeySort(data map[string]interface{}) []string {
 	return keys
 }
 
-func Pay()  {
-
+func Pay(weChatPay WeChatPay)  {
 	data := make(map[string]interface{})
-	data["mch_appid"] = "wxa0d7aa1607c5ac21"
-	data["mchid"] = "1254223701"
-	data["nonce_str"] = "qweqweqweqwe"
-	data["partner_trade_no"] = "10000098201411111234567890"
-	data["openid"] = "oc-wc48UGe_dVNqmAPJjIQAEw5-w"
-	data["check_name"] = "NO_CHECK"
-	data["amount"] = 100
-	data["desc"] = "抽奖"
+	data["mch_appid"] 			= weChatPay.MchAppid
+	data["mchid"] 				= weChatPay.Mchid
+	data["nonce_str"] 			= weChatPay.NonceStr
+	data["partner_trade_no"] 	= weChatPay.PartnerTradeNo
+	data["openid"] 				= weChatPay.Openid
+	data["check_name"] 			= weChatPay.CheckName
+	data["amount"] 				= weChatPay.Amount
+	data["desc"] 				= weChatPay.Desc
 
 	keys := KeySort(data)
 
@@ -209,98 +198,34 @@ func Pay()  {
 		}
 	}
 
+	config,_ := util.GetConfig()
+
 	//拼接api秘钥
-	stringSignTemp := fmt.Sprintf("%v&key=aY5fa4VPhDGWa1Qu19NuCVeBzChKIEWZ",dataStr)
+	stringSignTemp := dataStr+"&key="+config["WE_CHAT_PAY_API_KEY"]
 
-	fmt.Printf("拼接key：%v\n",stringSignTemp)
-
-	//方法一
+	//md5
 	h := md5.New()
 	h.Write([]byte(stringSignTemp)) // 需要加密的字符串为 123456
 	cipherStr := h.Sum(nil)
-	//fmt.Printf("%s\n", hex.EncodeToString(cipherStr)) // 输出加密结果
-
 	md5Str := strings.ToUpper(hex.EncodeToString(cipherStr))
 
-	fmt.Println(md5Str)
-	/*bytes2:=sha256.Sum256([]byte(md5Str))//计算哈希值，返回一个长度为32的数组
-	hashcode2:=hex.EncodeToString(bytes2[:])//将数组转换成切片，转换成16进制，返回字符串
-	fmt.Println(hashcode2)*/
-
-	//fmt.Println(md5str1)
-	//fmt.Println(dataStr
-
-	/*v := xmldas{}
-	v.Src = xmlsource{Path: "123", Param: "456"}
-	v.Dest = xmldestination{Path: "789", Param: "000"}
-	output, err := xml.MarshalIndent(v, "  ", "    ")
+	weChatPay.Sign = md5Str
+	xmlByte,err:=xml.Marshal(weChatPay)
 	if err != nil {
-		fmt.Printf("error: %v\n", err)
-	}
-
-	fmt.Println(string(output))*/
-
-	/*xData := XmlData{
-		MchAppid:       "",
-		Mchid:          "",
-		NonceStr:       "",
-		Sign:           "",
-		PartnerTradeNo: "",
-		Openid:         "",
-		CheckName:      "",
-		Amount:         0,
-		Desc:           "",
-	}
-
-	output, err := xml.MarshalIndent(xData, "  ", "    ")
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-	}
-
-	fmt.Println(string(output))*/
-
-
-
-	/*byteData,encodeErr := json.Marshal(&data)
-	if encodeErr != nil {
+		util.Error(fmt.Sprintf("解析xml数据出错：%v",err.Error()))
 		return
-	}*/
-
-	byteData := `
-<xml>
-
-<mch_appid>wxa0d7aa1607c5ac21</mch_appid>
-
-<mchid>1254223701</mchid>
-
-<nonce_str>qweqweqweqwe</nonce_str>
-
-<partner_trade_no>10000098201411111234567890</partner_trade_no>
-
-<openid>oc-wc48UGe_dVNqmAPJjIQAEw5-w</openid>
-
-<check_name>NO_CHECK</check_name>
-
-<amount>100</amount>
-
-<desc>抽奖</desc>
-
-<sign>BAF6451A7A3401D8B102E4C75226CC53</sign>
-
-</xml>
-
-`
+	}
 
 	url := "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers"
+	var wechatPayCert = config["WE_CHAT_PAY_CERT"]
+	var wechatPayKey = config["WE_CHAT_PAY_KEY"]
 
-	var wechatPayCert = "/www/server/wechat-pay/new/apiclient_cert.pem"
-	var wechatPayKey = "/www/server/wechat-pay/new/apiclient_key.pem"
 	//var tr *http.Transport
 	// 微信提供的API证书,证书和证书密钥 .pem格式
 	certs, err := tls.LoadX509KeyPair(wechatPayCert, wechatPayKey)
 	if err != nil {
-		log.Println("certs load err:", err)
-
+		util.Error(fmt.Sprintf("certs load err:", err.Error()))
+		return
 	} else {
 		// 微信支付HTTPS服务器证书的根证书  .pem格式
 		tr := &http.Transport{
@@ -312,33 +237,47 @@ func Pay()  {
 
 		client := &http.Client{Transport: tr}
 
-		req, createErr := http.NewRequest("POST", url, bytes.NewBuffer([]byte(byteData)))
+		req, createErr := http.NewRequest("POST", url, bytes.NewBuffer(xmlByte))
 		if createErr != nil {
-			fmt.Printf("创建失败:%v\n",createErr)
+			util.Error(fmt.Sprintf("创建失败:%v\n",createErr.Error()))
+			return
 		}
 
 		req.Header.Set("Content-Type", "application/json")
 
-
 		resp, err := client.Do(req)
-
 		if err != nil {
-			log.Fatal(err)
+			util.Error(fmt.Sprintf("微信支付请求失败：%v",err.Error()))
+			return
 		}
 
 		body,readErr := ioutil.ReadAll(resp.Body)
-		fmt.Println(readErr)
-		fmt.Println(string(body))
+		if readErr != nil {
+			util.Error(fmt.Sprintf("读取数据流失败：%v",readErr.Error()))
+			return
+		}
 
+		util.Info(fmt.Sprintf("请求微信支付结果：%v",string(body)))
+
+		payResult := &WeChatPayResult{}
+		xml.Unmarshal(body,payResult)
+		if payResult.ResultCode == "FAIL" {
+			fmt.Println("支付失败")
+		}
+		fmt.Println(payResult)
+
+		/**
+		<xml>
+		<return_code><![CDATA[SUCCESS]]></return_code>
+		<return_msg><![CDATA[]]></return_msg>
+		<mch_appid><![CDATA[wxa0d7aa1607c5ac21]]></mch_appid>
+		<mchid><![CDATA[1254223701]]></mchid>
+		<nonce_str><![CDATA[qweqweqweqwe]]></nonce_str>
+		<result_code><![CDATA[SUCCESS]]></result_code>
+		<partner_trade_no><![CDATA[10000098201411111234567890]]></partner_trade_no>
+		<payment_no><![CDATA[10100103444012102066101219418233]]></payment_no>
+		<payment_time><![CDATA[2021-02-06 22:05:12]]></payment_time>
+		</xml>
+		 */
 	}
-
-
-/*	httpClient := &util.HttpClient{}
-	err := httpClient.Post(url,byteData,nil, func(resp *http.Response) {
-		body,readErr := ioutil.ReadAll(resp.Body)
-		fmt.Println(readErr)
-		fmt.Println(string(body))
-	})
-
-	fmt.Println(err)*/
 }
