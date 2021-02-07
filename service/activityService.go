@@ -12,6 +12,7 @@ import (
 	"luck_draw/util"
 	"math/rand"
 	"sort"
+	"strconv"
 	"time"
 )
 
@@ -224,34 +225,40 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 	var hadJoin int64
 	joinLog := &model.JoinLog{}
 	hadJoin,err := joinLog.CountTodayJoinLog(db,userId)
+
 	if err == nil {
-		//判断参加的次数是否是3次了，三次提示用户可以分享+1，最多加到6次
-		if hadJoin == 3 {
-			return 0,&enums.ErrorInfo{enums.ActivityJoinLimitShare,enums.ACTIVITY_JOIN_LIMIT_TIME}
+		if hadJoin >= 6 {
+			//已经超过限制
+			return 0,&enums.ErrorInfo{enums.ActivityJoinLimit,enums.ACTIVITY_JOIN_LIMIT_TIME}
 		}
 
 		//ACTIVITY_USER_COUNT
 		//加入队列
-		/*redisCount := 0
-		var ctx = context.Background()
-		redis := util.NewRedis()
-		curtTime := time.Now().Format(enums.DATE_DAY_FORMAT)
-		key := enums.ACTIVITY_USER_COUNT+"_"+string(userId)+"_"+curtTime
-		redisResult := redis.Client.Get(ctx,key)
-		if redisResult.Err() != nil {
-			fmt.Println(redisResult.Err())
-		}
+		//redisCount := 0
 
-		if len(redisResult.Val()) >= 0 {
-			fmt.Println("数据存在")
-			//redisCount = (redisResult.Val()).(int)
-		}
-
-
-		if hadJoin + int64(redisCount) > 6 {
+		if hadJoin >= 3 {
 			//已经超过限制
-			return 0,&enums.ErrorInfo{enums.ActivityJoinLimit,enums.ACTIVITY_JOIN_LIMIT_TIME}
-		}*/
+			var ctx = context.Background()
+			redis := util.NewRedis()
+			curtTime := time.Now().Format(enums.DATE_DAY_FORMAT)
+			key := enums.ACTIVITY_USER_COUNT+"_"+fmt.Sprintf("%v",userId)+"_"+curtTime
+			redisResult := redis.Client.Get(ctx,key)
+			fmt.Println("分享次数")
+			fmt.Println(redisResult.Val())
+			fmt.Println(key)
+			if len(redisResult.Val()) <= 0 {
+				return 0,&enums.ErrorInfo{enums.ActivityJoinLimitShare,enums.ACTIVITY_JOIN_LIMIT_TIME}
+			}else{
+				redisCount,_:=strconv.Atoi(redisResult.Val())
+				fmt.Println("Redis计数")
+				fmt.Println(redisCount)
+				if redisCount <= 0 {
+					return 0,&enums.ErrorInfo{enums.ActivityJoinLimitShare,enums.ACTIVITY_JOIN_LIMIT_TIME}
+				}else{
+					redis.Client.Decr(ctx,key)
+				}
+			}
+		}
 	}
 
 	//悲观锁

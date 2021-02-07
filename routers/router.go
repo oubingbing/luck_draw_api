@@ -67,6 +67,9 @@ func InitRouter() *gin.Engine {
 		//活动参与记录
 		auth.GET("/activity/join_log",controller.ActivityLog)
 
+		//分享活动
+		auth.POST("/activity/share_join",controller.ShareActivity)
+
 		//新建礼品
 		auth.POST("/gift/create",controller.CreateGift)
 

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -8,6 +9,7 @@ import (
 	"luck_draw/model"
 	"luck_draw/service"
 	"luck_draw/util"
+	"time"
 )
 
 var createLDFail error = errors.New("数据保存失败")
@@ -244,5 +246,39 @@ func GetWins(ctx *gin.Context)  {
 }
 
 func ShareActivity(ctx *gin.Context)  {
+	uid,_:= ctx.Get("user_id")
+	db,connectErr := model.Connect()
+	defer db.Close()
+	if connectErr != nil {
+		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
+		return
+	}
 
+	var hadJoin int64
+	joinLog := &model.JoinLog{}
+	hadJoin,err := joinLog.CountTodayJoinLog(db,uid)
+
+	if err == nil {
+		if hadJoin > 6 {
+			//已经超过限制
+			util.ResponseJson(ctx,enums.ACTIVITY_JOIN_LIMIT_TIME,enums.ActivityJoinLimit.Error(),nil)
+			return
+		}
+	}
+
+	var ctxNew = context.Background()
+	redis := util.NewRedis()
+	curtTime := time.Now().Format(enums.DATE_DAY_FORMAT)
+	key := enums.ACTIVITY_USER_COUNT+"_"+fmt.Sprintf("%v",uid)+"_"+curtTime
+	redisResult := redis.Client.Get(ctxNew,key)
+	if redisResult.Err() != nil {
+	}
+	if len(redisResult.Val()) <= 0 {
+		redis.Client.SetEX(ctxNew,key,1,time.Hour*24)
+	}else{
+		redis.Client.Incr(ctx,key)
+	}
+
+	util.ResponseJson(ctx,enums.SUCCESS,"ok",nil)
+	return
 }
