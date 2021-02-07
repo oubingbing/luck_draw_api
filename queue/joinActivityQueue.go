@@ -181,7 +181,7 @@ func ListenWxNotify(wg *sync.WaitGroup)  {
 	queue := enums.WX_NOTIFY_QUEUE
 	redis.OnQueue(wg,queue,t, func(result *redis2.StringSliceCmd, e error) {
 		if len(result.Val()) > 0 {
-			util.Info(fmt.Sprintf("取出需要发送话费的数据：%v",result.Val()[1]));
+			util.Info(fmt.Sprintf("取出需要发送的数据：%v",result.Val()[1]));
 			HandleWxNotify(result.Val()[1])
 		}
 	})
@@ -194,7 +194,7 @@ func Listen()  {
 	go ListenAttemptJoin(&wg)
 	go ListenPhoneBill(&wg)
 	go ListenWxNotify(&wg)
-	//go ListenRedPackage(&wg)
+	go ListenRedPackage(&wg)
 	wg.Wait()
 	//程序退出，需要通知开发人员
 }

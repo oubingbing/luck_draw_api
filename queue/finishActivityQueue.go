@@ -328,7 +328,7 @@ func HandleReaPackage(activity model.Activity)  {
 
 			//推送到队列
 			intCmd := redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
-			intCmd = redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_PHONE_BILL_QUEUE,string(mpStr))
+			intCmd = redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_REA_PAK_QUEUE,string(mpStr))
 			if intCmd.Err() != nil {
 				util.ErrDetail(enums.ACTIVITY_PUSH_BILL_QUEUE_ERR,fmt.Sprintf("推送到红包发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,item.UserId),intCmd.Err().Error())
 			}

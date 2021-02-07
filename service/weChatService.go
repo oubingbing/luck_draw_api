@@ -274,6 +274,8 @@ func Pay(weChatPay WeChatPay) string {
 			return "FAIL"
 		}
 
+		fmt.Printf("红包发放结果：%v\n",string(body))
+
 		util.Info(fmt.Sprintf("请求微信支付结果：%v",string(body)))
 
 		payResult := &WeChatPayResult{}

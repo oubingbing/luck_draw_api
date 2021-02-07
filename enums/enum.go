@@ -4,7 +4,6 @@ const ACTIVITY_QUEUE						= "luck_activity_queue"  	 			//参加活动队列
 const INBOX_QUEUE							= "luck_inbox_queue"  	 				//保存消息盒子
 const WX_NOTIFY_QUEUE						= "luck_wx_notify_queue"  	 			//微信通知队列
 const ACTIVITY_HANDLE_PHONE_BILL_QUEUE		= "luck_handle_phone_bill_queue"  	 	//话费充值队列
-const ACTIVITY_HANDLE_RED_PAH_QUEUE		    = "luck_handle_red_pak_queue"  	 		//红包发放队列
 const ACTIVITY_HANDLE_REA_PAK_QUEUE			= "luck_handle_red_pak_queue"  	 		//发送红包队列
 const ACTIVITY_HANDLE_GIFT_QUEUE			= "luck_handle_gift_queue"  	 		//抽礼品队列
 const ACTIVITY_QUEUE_TRY					= "luck_activity_queue_try"  			//参加活动重试队列
