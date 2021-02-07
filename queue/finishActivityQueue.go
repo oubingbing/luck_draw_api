@@ -380,8 +380,8 @@ func HandleReaPackage(activity model.Activity)  {
 
 		num := len(joinLogSli) //中奖人数
 		leftAmount := gift.Num - float32(num)
-		unit := float32(0.1)
-		if leftAmount >= 0.1 {
+		unit := float32(1)
+		if leftAmount >= 1 {
 			//循环扣减,直到奖金池为0
 			seed := 1
 			for  {
