@@ -9,6 +9,7 @@ import (
 	"luck_draw/service"
 	"luck_draw/util"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -400,6 +401,9 @@ func HandleReaPackage(activity model.Activity)  {
 		}
 
 		for _,v := range user {
+
+			v.Bill,_ = strconv.ParseFloat(fmt.Sprintf("%.2f", v.Bill), 64)
+
 			v.Content = fmt.Sprintf("恭喜您，在%v中获得%v元红包，后将会发放到您的微信账户中，请留意微信消息",activity.Name,v.Bill)
 			mpStr,_ := json.Marshal(&v)
 			//推送到队列
