@@ -367,12 +367,17 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64,status int8,faker int
 		return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_QUERY_ERR,Err:queryJoinLogDbErr}
 	}
 
+	ip := util.GetLocalIP()
+	fmt.Printf("IP地址：%v\n",ip)
+	util.Error(fmt.Sprintf("IP地址：%v\n",ip))
+
 	//record not found
 	if gorm.IsRecordNotFoundError(err) {
 		joinLog.ActivityId = activityId
 		joinLog.UserId = userId
 		joinLog.Status = status
 		joinLog.Faker = faker
+		joinLog.IP = ip
 		joinLog.Remark = ""
 		joinLog.OrderId = fmt.Sprintf("%v%v",time.Now().UnixNano(),userId)
 

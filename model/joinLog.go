@@ -31,6 +31,7 @@ type JoinLog struct {
 	Faker			int8		`gorm:"column:faker"`
 	OrderId			string		`gorm:"column:order_id"`
 	Num				float64		`gorm:"column:num"`
+	IP				string		`gorm:"column:ip"`
 }
 
 type JoinLogPage []enums.JoinLogTrans

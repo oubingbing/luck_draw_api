@@ -115,6 +115,10 @@ func Join(ctx *gin.Context)  {
 		return
 	}
 
+	ip := util.GetLocalIP()
+	fmt.Printf("IP地址：%v\n",ip)
+	util.Error(fmt.Sprintf("IP地址：%v\n",ip))
+
 	userId,cok := uid.(float64)
 	if !cok {
 		util.Info(fmt.Sprintf("用户user_id:%v",uid))
@@ -128,6 +132,8 @@ func Join(ctx *gin.Context)  {
 		util.ResponseJson(ctx,connectErr.Code,connectErr.Err.Error(),nil)
 		return
 	}
+
+
 
 	logId,err := service.ActivityJoin(db,id.(string),int64(userId))
 	if err != nil {
