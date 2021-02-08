@@ -203,7 +203,7 @@ func GetActivityMember(ctx *gin.Context)  {
 func ActivityType(ctx *gin.Context)  {
 	data := []map[string]interface{}{
 		map[string]interface{}{"type":0,"txt":"全部"},
-		map[string]interface{}{"type":1,"txt":"红包"},
+		//map[string]interface{}{"type":1,"txt":"红包"},
 		map[string]interface{}{"type":3,"txt":"话费"},
 		map[string]interface{}{"type":2,"txt":"礼品"},
 		map[string]interface{}{"type":4,"txt":"虚拟奖品"},
