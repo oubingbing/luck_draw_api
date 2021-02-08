@@ -30,3 +30,15 @@ func AdInbox(ctx *gin.Context)  {
 	util.ResponseJson(ctx,enums.SUCCESS,"",adCode)
 	return
 }
+
+func AdBanner(ctx *gin.Context)  {
+	adCode := service.GetAd(6)
+	util.ResponseJson(ctx,enums.SUCCESS,"",adCode)
+	return
+}
+
+func AdVideos(ctx *gin.Context)  {
+	adCode := service.GetAd(7)
+	util.ResponseJson(ctx,enums.SUCCESS,"",adCode)
+	return
+}

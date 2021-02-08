@@ -36,6 +36,12 @@ func InitRouter() *gin.Engine {
 		//消息盒子页面广告
 		notAuth.GET("/ad/inbox",controller.AdInbox)
 
+		//消息盒子页面广告
+		notAuth.GET("/ad/banner",controller.AdBanner)
+
+		//消息盒子页面广告
+		notAuth.GET("/ad/videos",controller.AdVideos)
+
 		//活动类型
 		notAuth.GET("/activity/category",controller.ActivityType)
 
