@@ -101,7 +101,6 @@ func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorI
 	newDB :=  Page(db,activity.TableName(),page).
 			Where("deleted_at is null").
 			Where("is_top = ?",0).
-			Where("type != 1").
 			Where("status = ?",status)
 
 	filterDb := newDB
