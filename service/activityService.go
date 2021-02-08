@@ -219,7 +219,7 @@ func ActivityDetail(db *gorm.DB,id string,userId float64) (*enums.ActivityDetail
 /**
  * 进入参与活动队列
  */
-func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
+func ActivityJoin(db *gorm.DB,id string,userId int64,ip string) (uint,*enums.ErrorInfo) {
 	activity := &model.Activity{}
 
 	var hadJoin int64
@@ -275,7 +275,7 @@ func ActivityJoin(db *gorm.DB,id string,userId int64) (uint,*enums.ErrorInfo) {
 	}
 
 	//写入参与日志
-	joinLog,joinLogErr := SaveJoinLog(db,int64(activity.ID),userId,model.JOIN_LOG_STATUS_QUEUE,model.FAKER_N)
+	joinLog,joinLogErr := SaveJoinLog(db,int64(activity.ID),userId,model.JOIN_LOG_STATUS_QUEUE,model.FAKER_N,ip)
 	if joinLogErr != nil {
 		return 0,joinLogErr
 	}
@@ -328,7 +328,7 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 			fakerUserId := rand.Intn(int(len(userIds)))
 
 			//加入Faker
-			_,joinLogErr := SaveJoinLog(tx,int64(activity.ID),int64(userIds[fakerUserId].ID),model.JOIN_LOG_STATUS_SUCCESS,model.FAKER_Y)
+			_,joinLogErr := SaveJoinLog(tx,int64(activity.ID),int64(userIds[fakerUserId].ID),model.JOIN_LOG_STATUS_SUCCESS,model.FAKER_Y,"ip")
 			if joinLogErr != nil {
 				//tx.Rollback()
 				return joinLogErr
@@ -355,7 +355,7 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 /**
  * 写入参与日志
  */
-func SaveJoinLog(db *gorm.DB,activityId int64,userId int64,status int8,faker int8) (*model.JoinLog,*enums.ErrorInfo) {
+func SaveJoinLog(db *gorm.DB,activityId int64,userId int64,status int8,faker int8,ip string) (*model.JoinLog,*enums.ErrorInfo) {
 	joinLog := &model.JoinLog{}
 
 	err := joinLog.FindByUserActivity(db,activityId,userId)
@@ -367,7 +367,6 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64,status int8,faker int
 		return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_QUERY_ERR,Err:queryJoinLogDbErr}
 	}
 
-	ip := util.GetLocalIP()
 	fmt.Printf("IP地址：%v\n",ip)
 	util.Error(fmt.Sprintf("IP地址：%v\n",ip))
 

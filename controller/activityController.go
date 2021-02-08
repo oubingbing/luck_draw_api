@@ -108,6 +108,7 @@ func GetDetail(ctx *gin.Context)  {
  * 参与活动
  */
 func Join(ctx *gin.Context)  {
+	ip := util.GetClientIP(ctx)
 	uid,_:= ctx.Get("user_id")
 	id,ok := util.Input(ctx,"id")
 	if !ok {
@@ -115,7 +116,6 @@ func Join(ctx *gin.Context)  {
 		return
 	}
 
-	ip := util.GetLocalIP()
 	fmt.Printf("IP地址：%v\n",ip)
 	util.Error(fmt.Sprintf("IP地址：%v\n",ip))
 
@@ -135,7 +135,7 @@ func Join(ctx *gin.Context)  {
 
 
 
-	logId,err := service.ActivityJoin(db,id.(string),int64(userId))
+	logId,err := service.ActivityJoin(db,id.(string),int64(userId),ip)
 	if err != nil {
 		util.ResponseJson(ctx,err.Code,err.Err.Error(),nil)
 		return
