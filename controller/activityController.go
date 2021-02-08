@@ -116,6 +116,18 @@ func Join(ctx *gin.Context)  {
 		return
 	}
 
+	illegeIp := make(map[string]string)
+	illegeIp["116.26.190.79"] = "116.26.190.79"
+	illegeIp["117.136.106.139"] = "116.26.190.79"
+	illegeIp["113.17.150.228"] = "113.17.150.228"
+	illegeIp["182.138.172.140"] = "182.138.172.140"
+	_,ok = illegeIp[ip]
+	fmt.Printf("ok是什么：%v\n",ok)
+	if ok {
+		util.ResponseJson(ctx,500,"网络繁忙，请稍后再试",nil)
+		return
+	}
+
 	fmt.Printf("IP地址：%v\n",ip)
 	util.Error(fmt.Sprintf("IP地址：%v\n",ip))
 
