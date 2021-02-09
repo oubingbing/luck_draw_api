@@ -227,7 +227,7 @@ func ActivityJoin(db *gorm.DB,id string,userId int64,ip string) (uint,*enums.Err
 	hadJoin,err := joinLog.CountTodayJoinLog(db,userId)
 
 	if err == nil {
-		if hadJoin >= 5 {
+		if hadJoin >= 4 {
 			//已经超过限制
 			return 0,&enums.ErrorInfo{enums.ActivityJoinLimit,enums.ACTIVITY_JOIN_LIMIT_TIME}
 		}
@@ -236,7 +236,7 @@ func ActivityJoin(db *gorm.DB,id string,userId int64,ip string) (uint,*enums.Err
 		//加入队列
 		//redisCount := 0
 
-		if hadJoin >= 2 {
+		if hadJoin >= 1 {
 			//已经超过限制
 			var ctx = context.Background()
 			redis := util.NewRedis()
