@@ -83,6 +83,7 @@ func HandleRedPackage(inboxMessage string)  {
 	}else{
 		//假用户，不发放
 		util.Info(fmt.Sprintf("假用户不发放红包：%v",inboxMessage))
+		status = int8(model.JOIN_LOG_SEND_AWARD_SUCCESS)
 	}
 
 	joinLog := &model.JoinLog{}
