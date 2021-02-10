@@ -56,9 +56,10 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 	//Faker join
 	if int(activity.Really) == model.ACTIVITY_REALLY_N {
 		var fakerUserErr *enums.ErrorInfo
-		if activity.Type == model.ACTIVITY_TYPE_RED_PAK {
+		if activity.Type == model.ACTIVITY_TYPE_RED_PAK && activity.DrawType  != model.ACTIVITY_DRAW_TYPE_RAND_all {
 			fakerUserErr = service.JoinRedPackFakerUser(db,activity,userId)
 		}else{
+			fmt.Println("假人加入队伍")
 			fakerUserErr = service.JoinFakerUser(db,activity,userId)
 		}
 

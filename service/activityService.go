@@ -227,12 +227,12 @@ func ActivityJoin(db *gorm.DB,id string,userId int64,ip string) (uint,*enums.Err
 	hadJoin,err := joinLog.CountTodayJoinLog(db,userId)
 
 	if err == nil {
-		if hadJoin >= 1 {
+		if hadJoin >= 2 {
 			//已经超过限制
 			return 0,&enums.ErrorInfo{enums.ActivityJoinLimit,enums.ACTIVITY_JOIN_LIMIT_TIME}
 		}
 
-		if hadJoin >= 0 {
+		if hadJoin >= 1 {
 			//已经超过限制
 			var ctx = context.Background()
 			redis := util.NewRedis()
@@ -313,7 +313,8 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 	sort.Ints(fakerUser)
 	activityNewNum := activity.JoinNum
 	for i := 0; i <= len(fakerUser) - 1 ; i++ {
-		if int(activityNum) == fakerUser[i] {
+		fmt.Printf("activityNum：%v,fakerUser[i]:%v\n",activityNum,fakerUser[i])
+		if int(activityNum) == fakerUser[i] || int(activityNewNum) == fakerUser[i] {
 			userIds,err := GetFakerUser(tx)
 			if err != nil {
 				fmt.Println(intCmd.Err())
@@ -327,9 +328,9 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 			_,joinLogErr := SaveJoinLog(tx,int64(activity.ID),int64(userIds[fakerUserId].ID),model.JOIN_LOG_STATUS_SUCCESS,model.FAKER_Y,"ip")
 			if joinLogErr != nil {
 				//tx.Rollback()
+				util.ErrDetail(joinLogErr.Code,"加入队列失败",joinLogErr.Err.Error())
 				return joinLogErr
 			}
-
 			activityNewNum += 1
 		}
 
@@ -436,7 +437,6 @@ func SaveJoinLog(db *gorm.DB,activityId int64,userId int64,status int8,faker int
 		return nil,&enums.ErrorInfo{Code:enums.ACTIVITY_JOIN_QUERY_ERR,Err:queryJoinLogDbErr}
 	}
 
-	fmt.Printf("IP地址：%v\n",ip)
 	util.Error(fmt.Sprintf("IP地址：%v\n",ip))
 
 	//record not found

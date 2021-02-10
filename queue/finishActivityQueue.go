@@ -361,7 +361,7 @@ func HandleReaPackage(activity model.Activity)  {
 			}
 		}
 		//更新所有的
-	}else{
+	}else if activity.DrawType == model.ACTIVITY_DRAW_TYPE_RAND{
 		//拼手气,人人有份
 		var avergeBill int64 = 1 //需要送的话费
 		user := make(map[int]*model.InboxMessage)
@@ -440,6 +440,186 @@ func HandleReaPackage(activity model.Activity)  {
 			}
 		}
 
+	}else{
+		//20%中奖
+		var avergeBill int64 = 1 //需要送的话费
+		fakerUserList := make(map[int]*model.InboxMessage)
+		reallyUserList := make(map[int]*model.InboxMessage)
+		for index,item := range joinLogSli {
+			if  item.Faker == model.FAKER_Y {
+				inbox := model.InboxMessage{}
+				inbox.UserId = item.UserId
+				inbox.JoinLogId = int64(item.ID)
+				inbox.Bill = float64(avergeBill)
+				inbox.ObjectId = item.ActivityId
+				inbox.ActivityName = activity.Name
+				inbox.OrderId = item.OrderId
+				inbox.Content = ""
+				consume += avergeBill
+				fakerUserList[index] = &inbox
+			}else{
+				inbox := model.InboxMessage{}
+				inbox.UserId = item.UserId
+				inbox.JoinLogId = int64(item.ID)
+				inbox.Bill = float64(0)
+				inbox.ObjectId = item.ActivityId
+				inbox.ActivityName = activity.Name
+				inbox.OrderId = item.OrderId
+				inbox.Content = ""
+				reallyUserList[index] = &inbox
+			}
+		}
+
+		//抽真实中奖
+		reallNum := len(joinLogSli)
+		reallyLeftAmount := activity.JoinLimitNum * 0.04
+		fmt.Printf("真实中奖用户数：%v\n",reallyLeftAmount)
+		unit := float32(1)
+		if reallyLeftAmount >= 1 {
+			//循环扣减,直到奖金池为0
+			seed := 1
+			for  {
+				if reallyLeftAmount <= 0 {
+					break
+				}
+				rand.Seed(time.Now().UnixNano()+int64(seed))
+				key := rand.Intn(reallNum)
+				//抽取一个中奖用户
+				_,ok := reallyUserList[key]
+				if ok {
+					if reallyUserList[key].Bill == 0 {
+						reallyUserList[key].Bill += float64(unit)
+						reallyLeftAmount = reallyLeftAmount - unit
+						consume += int64(unit)
+						fmt.Printf("中奖log id:%v\n",reallyUserList[key].JoinLogId)
+					}
+				}
+				seed = seed + int(consume) + 1
+			}
+		}
+
+		//抽假用户
+		fakerNum := len(joinLogSli)
+		fakerLeftAmount := gift.Num - (activity.JoinLimitNum * 0.04) - float32(len(fakerUserList))
+		fmt.Printf("假用户抽的金额：%v\n",fakerLeftAmount)
+		if fakerLeftAmount >= 1 {
+			//循环扣减,直到奖金池为0
+			seed := 1
+			for  {
+				if fakerLeftAmount <= 0 {
+					break
+				}
+				rand.Seed(time.Now().UnixNano()+int64(seed))
+				key := rand.Intn(fakerNum)
+				//抽取一个中奖用户
+				_,ok := fakerUserList[key]
+				if ok {
+					fakerUserList[key].Bill += float64(unit)
+					fakerLeftAmount -= unit
+					consume += int64(unit)
+				}
+				seed = seed + int(consume) + 1
+			}
+		}
+
+		var winId []int64
+		loseRemark := "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"
+		//更新未中奖的
+		joinLogNot := &model.JoinLog{}
+		update := make(map[string]interface{})
+		update["remark"] = loseRemark
+		update["status"] = model.JOIN_LOG_STATUS_LOSE
+		updateActivity["num"] = float64(0)
+		updateErr := joinLogNot.UpdateNotWin(db,activity.ID,winId,update)
+		if updateErr != nil {
+			util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"更新用户未中奖join log数据库异常",updateErr.Error())
+		}
+
+		//通知真用户
+		for _,v := range reallyUserList {
+			if v.Bill > 0 {
+				//中奖
+				v.Bill,_ = strconv.ParseFloat(fmt.Sprintf("%.2f", v.Bill), 64)
+
+				v.Content = fmt.Sprintf("恭喜您，在%v中获得%v元红包，后将会发放到您的微信账户中，请留意微信消息",activity.Name,v.Bill)
+				mpStr,_ := json.Marshal(&v)
+				//推送到队列
+				intCmd := redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
+				intCmd = redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_REA_PAK_QUEUE,string(mpStr))
+				if intCmd.Err() != nil {
+					util.ErrDetail(enums.ACTIVITY_PUSH_BILL_QUEUE_ERR,fmt.Sprintf("推送到红包发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,v.UserId),intCmd.Err().Error())
+				}
+
+				userInfo:= &model.User{}
+				findUserErr := userInfo.FindById(db,v.UserId)
+				if findUserErr == nil {
+					mp := make(map[string]string)
+					mp["type"] = "d"
+					mp["id"] = fmt.Sprintf("%v",activity.ID)
+					mp["openid"] = userInfo.OpenId
+					mp["activityName"] = activity.Name
+					mp["result"] = "已中奖"
+					mp["time"] = curTime
+					mp["giftName"] = gift.Name
+					mp["remark"] = fmt.Sprintf("恭喜获得%v元红包",v.Bill)
+					mpStr,_ := json.Marshal(&mp)
+					redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
+				}
+
+				joinLog := &model.JoinLog{}
+				update := make(map[string]interface{})
+				update["remark"] = fmt.Sprintf("恭喜获得%v元红包",v.Bill)
+				update["status"] = model.JOIN_LOG_STATUS_WIN
+				update["num"]    = v.Bill
+				updateErr := joinLog.Update(db,uint(v.JoinLogId),update)
+				if updateErr != nil {
+					util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())
+				}
+			}
+		}
+
+		//通知假用户
+		for _,v := range fakerUserList {
+			if v.Bill > 0 {
+				//中奖
+				v.Bill,_ = strconv.ParseFloat(fmt.Sprintf("%.2f", v.Bill), 64)
+
+				v.Content = fmt.Sprintf("恭喜您，在%v中获得%v元红包，后将会发放到您的微信账户中，请留意微信消息",activity.Name,v.Bill)
+				mpStr,_ := json.Marshal(&v)
+				//推送到队列
+				intCmd := redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
+				intCmd = redis.Client.LPush(ctx,enums.ACTIVITY_HANDLE_REA_PAK_QUEUE,string(mpStr))
+				if intCmd.Err() != nil {
+					util.ErrDetail(enums.ACTIVITY_PUSH_BILL_QUEUE_ERR,fmt.Sprintf("推送到红包发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,v.UserId),intCmd.Err().Error())
+				}
+
+				userInfo:= &model.User{}
+				findUserErr := userInfo.FindById(db,v.UserId)
+				if findUserErr == nil {
+					mp := make(map[string]string)
+					mp["type"] = "d"
+					mp["id"] = fmt.Sprintf("%v",activity.ID)
+					mp["openid"] = userInfo.OpenId
+					mp["activityName"] = activity.Name
+					mp["result"] = "已中奖"
+					mp["time"] = curTime
+					mp["giftName"] = gift.Name
+					mp["remark"] = fmt.Sprintf("恭喜获得%v元红包",v.Bill)
+					mpStr,_ := json.Marshal(&mp)
+					redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
+				}
+
+				joinLog := &model.JoinLog{}
+				update := make(map[string]interface{})
+				update["remark"] = fmt.Sprintf("恭喜获得%v元红包",v.Bill)
+				update["status"] = model.JOIN_LOG_STATUS_WIN
+				update["num"]    = v.Bill
+				updateErr := joinLog.Update(db,uint(v.JoinLogId),update)
+				if updateErr != nil {
+					util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())
+				}
+			}
+		}
 	}
 
 	//还有一种是真用户只有1元，假用户可以中更多
