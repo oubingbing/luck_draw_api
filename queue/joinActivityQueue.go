@@ -55,7 +55,13 @@ func AttemptJoin(db *gorm.DB,id interface{}) (string,int) {
 
 	//Faker join
 	if int(activity.Really) == model.ACTIVITY_REALLY_N {
-		fakerUserErr := service.JoinFakerUser(db,activity,userId)
+		var fakerUserErr *enums.ErrorInfo
+		if activity.Type == model.ACTIVITY_TYPE_RED_PAK {
+			fakerUserErr = service.JoinRedPackFakerUser(db,activity,userId)
+		}else{
+			fakerUserErr = service.JoinFakerUser(db,activity,userId)
+		}
+
 		if fakerUserErr != nil {
 			msg = fakerUserErr.Err.Error()
 			finish = fakerUserErr.Code

@@ -227,7 +227,7 @@ func ActivityJoin(db *gorm.DB,id string,userId int64,ip string) (uint,*enums.Err
 	hadJoin,err := joinLog.CountTodayJoinLog(db,userId)
 
 	if err == nil {
-		if hadJoin >= 4 {
+		if hadJoin >= 3 {
 			//已经超过限制
 			return 0,&enums.ErrorInfo{enums.ActivityJoinLimit,enums.ACTIVITY_JOIN_LIMIT_TIME}
 		}
@@ -335,6 +335,79 @@ func JoinFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.Err
 			}
 
 			activityNewNum += 1
+		}
+
+		//判断参加用户是佛已经满人
+	}
+
+	activityData := make(map[string]interface{})
+	activityData["join_num"] = activityNewNum
+	err := activity.Update(tx,activity.ID,activityData)
+	if err != nil {
+		//tx.Rollback()
+		util.ErrDetail(enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR,enums.ActivityUpdateJoinNumFailErr.Error(),activity.ID)
+		return &enums.ErrorInfo{enums.ActivityUpdateJoinNumFailErr,enums.ACTIVITY_DEAL_QUEUE_UPDATE_A_ERR}
+	}
+
+	return nil
+}
+
+func JoinRedPackFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *enums.ErrorInfo {
+	ctx := context.Background()
+	redis := util.NewRedis()
+	defer redis.Client.Close()
+	cacheKey := fmt.Sprintf("%v:%v",model.FAKER_USER_KEY,activity.ID)
+	intCmd := redis.Client.Get(ctx,cacheKey)
+	if intCmd.Err() != nil {
+		util.Error(fmt.Sprintf("这个faker 用户数组不存在 %v:%v",model.FAKER_USER_KEY,activity.ID))
+		return nil
+	}
+
+	var fakerUser []int
+	parserErr := json.Unmarshal([]byte(intCmd.Val()),&fakerUser)
+	if parserErr != nil {
+		//解析数据失败
+		return &enums.ErrorInfo{enums.SystemErr,enums.SYSTEM_ERR}
+	}
+
+	fmt.Println(fakerUser)
+
+	activityNum := activity.JoinNum
+	sort.Ints(fakerUser)
+	activityNewNum := activity.JoinNum
+	findReal := 0
+	for i := 0; i <= len(fakerUser) - 1 ; i++ {
+		fmt.Printf("activity.JoinNum:%v,fakerUser[i]:%v\n",activity.JoinNum,fakerUser[i])
+		if int(activity.JoinNum) <= fakerUser[i] {
+			userIds,err := GetFakerUser(tx)
+			if err != nil {
+				fmt.Println(intCmd.Err())
+				return &enums.ErrorInfo{enums.SystemErr,enums.SYSTEM_ERR}
+			}
+
+			rand.Seed(time.Now().UnixNano()+userId+(int64(i)))
+			fakerUserId := rand.Intn(int(len(userIds)))
+
+			//加入Faker
+			_,joinLogErr := SaveJoinLog(tx,int64(activity.ID),int64(userIds[fakerUserId].ID),model.JOIN_LOG_STATUS_SUCCESS,model.FAKER_Y,"ip")
+			if joinLogErr != nil {
+				//tx.Rollback()
+				return joinLogErr
+			}
+
+			activityNewNum += 1
+			activityNum += 1
+		}
+
+		if i <= len(fakerUser) - 2{
+			if int(activity.JoinNum) <= fakerUser[i] && fakerUser[i] + 1 == fakerUser[i+1] - 1 {
+				if findReal == 1 {
+					break
+				}
+				//找到了位置
+				activityNum += 1
+				findReal = 1
+			}
 		}
 
 		//判断参加用户是佛已经满人
