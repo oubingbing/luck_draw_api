@@ -38,7 +38,7 @@ var (
 	ActivityJoinLogUpdateFailErr	= errors.New("更新活动参与记录因为加入活动因为人数已满失败出错")
 	ActivityUpdateJoinNumFailErr	= errors.New("更新活动参与人数出错")
 	ActivityStatusErr				= errors.New("活动不是可参加状态")
-	ActivityJoinLimit				= errors.New("您今天参与的活动次数已经达到5次了，明天再来吧")
+	ActivityJoinLimit				= errors.New("您今天参与的活动次数已经达到3次了，明天再来吧")
 	ActivityJoinLimitShare			= errors.New("今天参与次数已用完，把活动分享给好友并点击广告可获得参与次数")
 )
 
