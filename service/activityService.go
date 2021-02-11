@@ -227,7 +227,7 @@ func ActivityJoin(db *gorm.DB,id string,userId int64,ip string) (uint,*enums.Err
 	hadJoin,err := joinLog.CountTodayJoinLog(db,userId)
 
 	if err == nil {
-		if hadJoin >= 2 {
+		if hadJoin >= 3 {
 			//已经超过限制
 			return 0,&enums.ErrorInfo{enums.ActivityJoinLimit,enums.ACTIVITY_JOIN_LIMIT_TIME}
 		}

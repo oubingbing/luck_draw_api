@@ -39,7 +39,7 @@ var (
 	ActivityUpdateJoinNumFailErr	= errors.New("更新活动参与人数出错")
 	ActivityStatusErr				= errors.New("活动不是可参加状态")
 	ActivityJoinLimit				= errors.New("您今天参与的活动次数已经达到限制了，明天再来吧")
-	ActivityJoinLimitShare			= errors.New("把活动分享给好友并点击广告可获得参与次数")
+	ActivityJoinLimitShare			= errors.New("分享给好友可获得参与次数")
 )
 
 //socket
