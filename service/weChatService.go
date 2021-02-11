@@ -41,7 +41,7 @@ func WxNotify(data map[string]interface{})  {
 		if readErr != nil {
 			util.ErrDetail(enums.WX_NOTIFY_IO_ERR,"模板消息读取数据流失败",readErr.Error())
 		}
-		util.Info(fmt.Sprintf("微信消息通知结果：%v",string(body)))
+		util.Info(fmt.Sprintf("微信消息通知结果：%v,userid:%v",string(body),string(byteData)))
 	})
 
 	if err != nil {

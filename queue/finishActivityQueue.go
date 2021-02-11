@@ -575,6 +575,31 @@ func HandleReaPackage(activity model.Activity)  {
 				if updateErr != nil {
 					util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())
 				}
+			}else{
+				//通知未中奖的
+				v.Content = loseRemark
+				mpStr,_ := json.Marshal(&v)
+				//推送到队列
+				intCmd := redis.Client.LPush(ctx,enums.INBOX_QUEUE,string(mpStr))
+				if intCmd.Err() != nil {
+					util.ErrDetail(enums.ACTIVITY_PUSH_BILL_QUEUE_ERR,fmt.Sprintf("推送到红包发货队列失败,acitivity_id:%v\n,user_id:%v",activity.ID,v.UserId),intCmd.Err().Error())
+				}
+
+				userInfo:= &model.User{}
+				findUserErr := userInfo.FindById(db,v.UserId)
+				if findUserErr == nil {
+					mp := make(map[string]string)
+					mp["type"] = "d"
+					mp["id"] = fmt.Sprintf("%v",activity.ID)
+					mp["openid"] = userInfo.OpenId
+					mp["activityName"] = activity.Name
+					mp["result"] = "未中奖"
+					mp["time"] = curTime
+					mp["giftName"] = gift.Name
+					mp["remark"] = loseRemark
+					mpStr,_ := json.Marshal(&mp)
+					redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
+				}
 			}
 		}
 
@@ -618,6 +643,8 @@ func HandleReaPackage(activity model.Activity)  {
 				if updateErr != nil {
 					util.ErrDetail(enums.ACTIVITY_UPDATE_JL_ERR,"跟新用户中奖join log数据库异常",updateErr.Error())
 				}
+			}else{
+
 			}
 		}
 	}
