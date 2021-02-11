@@ -596,7 +596,7 @@ func HandleReaPackage(activity model.Activity)  {
 					mp["result"] = "未中奖"
 					mp["time"] = curTime
 					mp["giftName"] = gift.Name
-					mp["remark"] = loseRemark
+					mp["remark"] = "很遗憾未中奖"
 					mpStr,_ := json.Marshal(&mp)
 					redis.Client.LPush(ctx,enums.WX_NOTIFY_QUEUE,string(mpStr))
 				}
