@@ -50,6 +50,7 @@ type ActivityDetailFormat struct {
 	Gift      		*GiftDetail
 	ActivityLog		map[string]interface{}
 	Number 			string
+	DrawType 		int8
 }
 
 type GiftParam struct {
@@ -87,6 +88,7 @@ type JoinLogTrans struct {
 	JoinNum 		int32
 	JoinLimitNum 	float32
 	ActivityStatus 	int8
+	DrawType 		int8
 }
 
 type JoinLogMember struct {

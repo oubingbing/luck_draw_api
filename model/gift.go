@@ -54,6 +54,7 @@ type ActivityPageFormat struct {
 	CreatedAt		*time.Time
 	IsTop			int8
 	Number 			string
+	DrawType 		int8
 }
 
 func (Gift) TableName() string  {

@@ -110,7 +110,7 @@ func (activity *Activity)Page(db *gorm.DB,page *PageParam) (AcPage,*enums.ErrorI
 		filterDb = newDB.Where("type = ?",page.Type)
 	}
 
-	err := filterDb.Select("id,name,is_top,number,gift_id,type,from_type,join_num,attachments,join_limit_num,status,created_at").
+	err := filterDb.Select("id,name,is_top,number,gift_id,type,from_type,join_num,attachments,join_limit_num,status,created_at,draw_type").
 			Order("id desc").
 			Find(&activities).Error
 	if err != nil {
@@ -124,7 +124,7 @@ func (activity *Activity) Detail(db *gorm.DB,id string) (*enums.ActivityDetailFo
 	activityDetail := &enums.ActivityDetailFormat{}
 	err := db.Table(activity.TableName()).
 		Where("deleted_at is null").
-		Select("id,name,gift_id,number,status,type,from_type,open_ad,join_num,limit_join,join_limit_num,des,attachments,share_title,share_image,created_at").
+		Select("id,name,gift_id,draw_type,number,status,type,from_type,open_ad,join_num,limit_join,join_limit_num,des,attachments,share_title,share_image,created_at").
 		Where("id = ?",id).
 		First(activityDetail).Error
 	return activityDetail,db.RecordNotFound(),err
