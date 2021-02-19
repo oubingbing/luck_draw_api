@@ -258,8 +258,16 @@ func HandlePhoneBill(activity model.Activity)  {
 
 //处理红包
 func HandleReaPackage(activity model.Activity)  {
-	if float32(activity.JoinNum) < activity.JoinLimitNum {
-		return
+	if activity.DrawType == model.ACTIVITY_DRAW_TYPE_TIME {
+		if time.Now().Unix() < activity.RunAt.Unix() || activity.RunAt == nil {
+			fmt.Println("未到时间")
+			return
+		}
+		fmt.Println("已到时间")
+	}else{
+		if float32(activity.JoinNum) < activity.JoinLimitNum {
+			return
+		}
 	}
 
 	db,connectErr := model.Connect()
@@ -440,7 +448,7 @@ func HandleReaPackage(activity model.Activity)  {
 			}
 		}
 
-	}else{
+	}else {
 		//20%中奖
 		var avergeBill int64 = 1 //需要送的话费
 		fakerUserList := make(map[int]*model.InboxMessage)
@@ -472,14 +480,21 @@ func HandleReaPackage(activity model.Activity)  {
 
 		//抽真实中奖
 		reallNum := len(joinLogSli)
-		reallyLeftAmount := activity.JoinLimitNum * 0.04
+
+		reallyLeftAmount := float32(0)
+		if activity.DrawType == model.ACTIVITY_DRAW_TYPE_RAND_all {
+			reallyLeftAmount = activity.JoinLimitNum * 0.04
+		}else{
+			reallyLeftAmount = 2
+		}
+
 		fmt.Printf("真实中奖用户数：%v\n",reallyLeftAmount)
 		unit := float32(1)
 		if reallyLeftAmount >= 1 {
 			//循环扣减,直到奖金池为0
 			seed := 1
 			for  {
-				if reallyLeftAmount <= 0 {
+				if reallyLeftAmount <= 0 || len(reallyUserList) <= 0 {
 					break
 				}
 				rand.Seed(time.Now().UnixNano()+int64(seed))
@@ -500,13 +515,18 @@ func HandleReaPackage(activity model.Activity)  {
 
 		//抽假用户
 		fakerNum := len(joinLogSli)
-		fakerLeftAmount := gift.Num - (activity.JoinLimitNum * 0.04) - float32(len(fakerUserList))
+		fakerLeftAmount := float32(0)
+		if activity.DrawType == model.ACTIVITY_DRAW_TYPE_RAND_all {
+			fakerLeftAmount = gift.Num - (activity.JoinLimitNum * 0.04) - float32(len(fakerUserList))
+		}else{
+			fakerLeftAmount = gift.Num - 2 - float32(len(fakerUserList))
+		}
 		fmt.Printf("假用户抽的金额：%v\n",fakerLeftAmount)
 		if fakerLeftAmount >= 1 {
 			//循环扣减,直到奖金池为0
 			seed := 1
 			for  {
-				if fakerLeftAmount <= 0 {
+				if fakerLeftAmount <= 0 || len(fakerUserList) <= 0 {
 					break
 				}
 				rand.Seed(time.Now().UnixNano()+int64(seed))
@@ -521,6 +541,8 @@ func HandleReaPackage(activity model.Activity)  {
 				seed = seed + int(consume) + 1
 			}
 		}
+
+		fmt.Println("更新状态数据")
 
 		var winId []int64
 		loseRemark := "很遗憾，您与大奖擦肩而过，请参加其他活动争取把大奖领回家吧，加油！"

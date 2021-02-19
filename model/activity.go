@@ -36,11 +36,12 @@ const (
 
 )
 
-//抽奖方式，1=平均，2=拼手气,3=20%中奖
+//抽奖方式，1=平均，2=拼手气,3=20%中奖，4=定时
 const (
 	ACTIVITY_DRAW_TYPE_AVERAGE  = 1
 	ACTIVITY_DRAW_TYPE_RAND     = 2
 	ACTIVITY_DRAW_TYPE_RAND_all = 3
+	ACTIVITY_DRAW_TYPE_TIME		= 4
 )
 
 //是否真的送奖品，0=否，1=是 really
@@ -67,7 +68,7 @@ type Activity struct {
 	Attachments 	string   	`gorm:"column:attachments"`
 	StartAt 		time.Time   `gorm:"column:start_at"` 		//活动开始时间
 	EndAt 			time.Time   `gorm:"column:end_at"` 			//活动截止时间
-	RunAt 			time.Time   `gorm:"column:run_at"` 			//开奖时间
+	RunAt 			*time.Time  `gorm:"column:run_at"` 			//开奖时间
 	Status 			int8		`gorm:"column:status"` 			//活动状态
 	ShareTitle 		string    	`gorm:"column:share_title"` 	//分享标题
 	ShareImage 		string    	`gorm:"column:share_image"` 	//分享图片

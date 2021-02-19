@@ -52,10 +52,10 @@ func SaveActivity(db *gorm.DB,param *enums.ActivityCreateParam) (int64,*enums.Er
 		return 0,&enums.ErrorInfo{endDateErr,enums.ACTIVITY_END_DATE_ERR}
 	}
 
-	activity.RunAt,parseErr = time.Parse("2006-01-02 15:04:05",param.RunAt)
+	/*activity.RunAt,parseErr = time.Parse("2006-01-02 15:04:05",param.RunAt)
 	if parseErr != nil {
 		return 0,&enums.ErrorInfo{runDateErr,enums.ACTIVITY_RUN_DATE_ERR}
-	}
+	}*/
 
 	_,err := FirstGiftById(db,activity.GiftId)
 	if err != nil {
@@ -266,8 +266,10 @@ func ActivityJoin(db *gorm.DB,id string,userId int64,ip string) (uint,*enums.Err
 		return 0,&enums.ErrorInfo{activityDetailNotFound,enums.ACTIVITY_DETAIL_NOT_FOUND}
 	}
 
-	if float32(activity.JoinNum) >= activity.JoinLimitNum {
-		return 0,&enums.ErrorInfo{joinLimit,enums.ACTIVITY_JOIN_LIMIT}
+	if activity.DrawType != model.ACTIVITY_DRAW_TYPE_TIME {
+		if float32(activity.JoinNum) >= activity.JoinLimitNum {
+			return 0,&enums.ErrorInfo{joinLimit,enums.ACTIVITY_JOIN_LIMIT}
+		}
 	}
 
 	//写入参与日志
@@ -366,8 +368,6 @@ func JoinRedPackFakerUser(tx *gorm.DB,activity *model.Activity,userId int64) *en
 		//解析数据失败
 		return &enums.ErrorInfo{enums.SystemErr,enums.SYSTEM_ERR}
 	}
-
-	fmt.Println(fakerUser)
 
 	activityNum := activity.JoinNum
 	sort.Ints(fakerUser)
