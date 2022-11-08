@@ -10,4 +10,5 @@ require (
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	gopkg.in/go-playground/validator.v9 v9.29.1
+	gopkg.in/ini.v1 v1.63.0
 )

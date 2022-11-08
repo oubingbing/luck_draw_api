@@ -1,0 +1,36 @@
+[mysql]
+DB_HOST=localhost
+DB_PORT= 3306
+DB_DATABASE=luck_draw
+DB_USERNAME=
+DB_PASSWORD=
+
+# cos
+COS_DOMAIN=
+
+# 微信小程序
+WX_APP_ID=
+WX_APP_SECRET=
+
+# redis
+REDIS_HOST=localhost
+REDIS_PASSWORD=
+REDIS_PORT=6379
+
+# socket secret 长连接
+SOCKET_SIGN_KEY=
+SOCKET_DOMAIN=
+
+# [juhe聚合数据接口]
+JU_APP_KEY=
+JU_OPEN_ID=
+
+# env dev,prod
+ENV=prod
+
+# 微信商户
+WE_CHAT_APP_ID=
+WE_CHAT_MCHID=
+WE_CHAT_PAY_CERT=/var/www/cert/apiclient_cert.pem
+WE_CHAT_PAY_KEY=/var/www/cert/apiclient_key.pem
+WE_CHAT_PAY_API_KEY=

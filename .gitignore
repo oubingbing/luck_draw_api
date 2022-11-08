@@ -5,3 +5,4 @@ conf.toml
 app.conf
 /project.*
 /project
+config.ini
